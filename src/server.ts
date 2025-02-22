@@ -8,6 +8,7 @@ import morgan from "morgan";
 import path from "path";
 import fs from "fs";
 import { logger } from "./handlers/Loggers";
+import { globalErrorController } from "./middlewares/globalErrorHandler";
 
 const app = express();
 
@@ -43,6 +44,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+app.use(globalErrorController);
 
 app.listen(environment.PORT, () => {
   logger.log(`Server listening on port: ${environment.PORT}`);
