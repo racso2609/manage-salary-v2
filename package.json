@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=prod tsc && node ./dist/src/index.js",
-    "test": "vitest,"
+    "start": "NODE_ENV=prod node ./dist/src/index.js",
+    "prestart": "pnpm build",
+    "dev": "NODE_ENV=dev npx tsx --watch-path='./src' src/index.ts",
+    "build": "tsc",
+    "test": "NODE_ENV=test vitest"
   },
   "keywords": [],
   "author": "",
@@ -24,9 +27,16 @@
     "vitest": "^3.0.6"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/morgan": "^1.9.9",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
     "mongoose": "^8.10.1",
+    "morgan": "^1.10.0",
     "zod": "^3.24.2"
   }
 }

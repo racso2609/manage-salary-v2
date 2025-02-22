@@ -1,7 +1,7 @@
-import { config as dotenvConfig } from "dotenv";
+import { configDotenv } from "dotenv";
 import { ENV } from "./types/env";
 
-dotenvConfig({
+configDotenv({
   path: `.env.${process.env.NODE_ENV}`,
   debug: process.env.NODE_ENV !== "prod",
 });

@@ -5,6 +5,7 @@ export type ENVIRONMENTS = z.infer<typeof ENVIRONMENTS>;
 
 export const ENV = z.object({
   // server
+  NODE_ENV: ENVIRONMENTS,
   PORT: z.preprocess((arg) => Number(arg), z.number()).default(3001),
   REQUEST_PER_HOUR: z.preprocess((arg) => Number(arg), z.number()).default(150),
 

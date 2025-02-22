@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 import environment from "./env";
+import { logger } from "./handlers/Loggers";
 
 mongoose
   .connect(environment.MONGO_URI)
   .then(() => {
-    console.log("Mongo connected");
+    logger.log("Mongo connected");
   })
-  .catch(console.error);
+  .catch(logger.error);
