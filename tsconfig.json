@@ -1,17 +1,25 @@
-
 {
     "compilerOptions": {
-        "target": "es2022",
-        "module": "commonjs",
-        "outDir": "dist",
-        "sourceMap": true,
-        "baseUrl": ".",
-        "paths": {
-            "@/*": ["src/*"],
-            "@cronjobs/*": ["src/cronjobs/*"]
-        }
+      "target": "es2020",
+      "lib": ["es2020"],
+      "module": "commonjs",
+      "outDir": "./dist",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "resolveJsonModule": true,
+      "baseUrl": "./",
+      "paths": {
+          "@/*": ["src/*"],
+          "@docs/*": ["docs/*"],
+          "@type/*": ["src/types/*"],
+          "@controllers/*": ["src/controllers/*"],
+          "@models/*": ["src/models/*"],
+          "@constants/*": ["src/constants/*"],
+          "@routes/*": ["src/routes/*"]
+      }
     },
-
-    "include": ["src/**/*", "scripts", "tests"],
-    "exclude": ["./node_modules", "./node_modules/*"]
+    "include": ["src/**/*", "tests/**/*", "docs/**/*", "scripts/**/*", "docs/**/*", "src/utils/emails/**/*"],
+    "exclude": ["node_modules"],
 }
