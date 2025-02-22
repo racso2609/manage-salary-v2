@@ -1,0 +1,17 @@
+
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "module": "commonjs",
+        "outDir": "dist",
+        "sourceMap": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"],
+            "@cronjobs/*": ["src/cronjobs/*"]
+        }
+    },
+
+    "include": ["src/**/*", "scripts", "tests"],
+    "exclude": ["./node_modules", "./node_modules/*"]
+}
