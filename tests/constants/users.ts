@@ -7,5 +7,5 @@ export const ALICE = {
 export const BOB = {
   email: "bob@gmail.com",
   userName: "bob",
-  password: "123",
+  password: "123456",
 };

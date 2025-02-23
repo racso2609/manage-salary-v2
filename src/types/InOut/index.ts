@@ -8,6 +8,8 @@ export const InOutRecord = z.object({
   type: z.enum(IN_OUT_RECORD_TYPES),
   currency: z.string(),
   user: z.unknown(),
+  description: z.string(),
+  tag: z.unknown(),
 });
 
 export type InOutRecord = z.infer<typeof InOutRecord>;

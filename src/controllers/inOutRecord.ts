@@ -1,5 +1,6 @@
 import { asyncHandler } from "@/handlers/callbacks";
 import InOutRecordHandler from "@/handlers/Db/inOutRecord";
+import { TagHandler } from "@/handlers/Db/tag";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
 import { InOutRecord } from "@/types/InOut";
@@ -11,6 +12,9 @@ export const createRecord = asyncHandler(
     const record = InOutRecord.omit({ user: true }).parse(req.body);
     const amount = Number(record.amount);
     if (!amount) return next(new AppError("Invalid amount", 400));
+
+    const tag = await TagHandler.findOne({ _id: record.tag });
+    if (!tag) return next(new AppError("Invalid tag", 400));
 
     const createdRecord = await InOutRecordHandler.create({
       ...record,

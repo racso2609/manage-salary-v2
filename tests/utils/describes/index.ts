@@ -30,6 +30,6 @@ export const DbTestDescribe = (
       if (mongodbContainer) mongodbContainer.stop();
     });
 
-    fn(mongoose);
+    describe("Test suite", () => fn(mongoose));
   });
 };
