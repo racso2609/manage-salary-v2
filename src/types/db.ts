@@ -10,6 +10,8 @@ export type OverrideDbParams = Partial<{
   sort: Record<string, SortOrder>;
   group: Record<string, unknown> & { _id: string };
   populates: { path: string; unique?: boolean }[];
+  limit: number;
+  offset: number;
 }>;
 
 export type DbRepository<T> = {

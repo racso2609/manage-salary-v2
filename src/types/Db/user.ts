@@ -25,4 +25,4 @@ export const Token = z.object({
 
 export type Token = z.infer<typeof Token>;
 
-export type AuthenticatedRequest = Request & { user: User };
+export type AuthenticatedRequest = Request & { user: User & { _id: unknown } };
