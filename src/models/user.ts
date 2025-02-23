@@ -1,16 +1,11 @@
 import { ROLES, User } from "@/types/Db/user";
-import { Document, model, Schema } from "mongoose";
+import { model, Schema } from "mongoose";
+import bcrypt from "mongoose-bcrypt";
 
-export type UserModel = User & Document;
-
-const userSchema = new Schema<UserModel>(
+const userSchema = new Schema<User>(
   {
     userName: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    password: {
-      type: String,
-      required: true,
-    },
     token: {
       type: String,
       unique: true,
@@ -29,4 +24,6 @@ const userSchema = new Schema<UserModel>(
   { timestamps: true },
 );
 
-export default model<UserModel>("User", userSchema);
+userSchema.plugin(bcrypt);
+
+export default model<User>("User", userSchema);

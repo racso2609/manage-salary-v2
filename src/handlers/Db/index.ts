@@ -6,6 +6,7 @@ import {
   PipelineStage,
   isValidObjectId,
   Types,
+  Document,
 } from "mongoose";
 import "@/models/index";
 import { OverrideDbParams, DbRepository as Repository } from "@/types/db";
@@ -65,8 +66,6 @@ export class DbRepository<T> implements Repository<T> {
 
     // isValidObjectId()
 
-    console.log("=== aggregateQuery", aggregateQuery);
-
     return aggregateQuery;
   }
 
@@ -77,11 +76,9 @@ export class DbRepository<T> implements Repository<T> {
 
   async findOne(
     query: FilterQuery<T>,
-    overrideDbParams: OverrideDbParams = {},
+    _overrideDbParams: OverrideDbParams = {},
   ) {
-    const aggregateQuery = this._manageQuery(query, overrideDbParams);
-    const result = await this.aggregate(aggregateQuery);
-    return result.at(0);
+    return this.model.findOne(query);
   }
 
   async create(data: T) {

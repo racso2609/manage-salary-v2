@@ -1,6 +1,6 @@
 import environment from "@/env";
 import { logger } from "@/handlers/Loggers";
-import { Response, Request } from "express";
+import { Response, Request, NextFunction } from "express";
 
 const sendErrorDevelopment = (error, res: Response) => {
   logger.error(error);
@@ -31,9 +31,9 @@ export const globalErrorController = (
   error,
   _req: Request,
   res: Response,
-  // _next: NextFunction,
+  _next: NextFunction,
 ) => {
   if (environment.NODE_ENV === "dev") sendErrorDevelopment(error, res);
-  sendErrorDevelopment(error, res);
-  if (environment.NODE_ENV === "prod") sendErrorProduction(error, res);
+  else if (environment.NODE_ENV === "prod") sendErrorProduction(error, res);
+  else sendErrorDevelopment(error, res);
 };

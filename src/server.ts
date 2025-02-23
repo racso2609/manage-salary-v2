@@ -5,35 +5,21 @@ import helmet from "helmet";
 import cors from "cors";
 import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
-import path from "path";
-import fs from "fs";
 import { logger } from "./handlers/Loggers";
 import { globalErrorController } from "./middlewares/globalErrorHandler";
+import router from "./routes";
 
 const app = express();
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
 app.use(helmet());
 app.use(cors());
 app.use(mongoSanitize());
 
-const loggerProfiler = ["dev", "test"].includes(environment.NODE_ENV)
-  ? "dev"
-  : "combined";
-
-const accessLogStream =
-  loggerProfiler === "combined"
-    ? fs.createWriteStream(
-        path.join(__dirname, "..", `${environment.NODE_ENV}.log`),
-        {
-          flags: "a",
-        },
-      )
-    : undefined;
-
 // Log requests to the console and write to file
-app.use(morgan(loggerProfiler, { stream: accessLogStream }));
+app.use(morgan("dev"));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -44,6 +30,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+app.use("/api", router);
 app.use(globalErrorController);
 
 app.listen(environment.PORT, () => {

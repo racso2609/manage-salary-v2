@@ -1,5 +1,6 @@
 {
   "name": "manage-salary-v2",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -30,6 +31,7 @@
   },
   "dependencies": {
     "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -37,7 +39,9 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
+    "mongoose-bcrypt": "^1.11.0",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-http-bearer": "^1.0.1",

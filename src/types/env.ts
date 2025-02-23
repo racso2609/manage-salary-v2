@@ -8,6 +8,7 @@ export const ENV = z.object({
   NODE_ENV: ENVIRONMENTS,
   PORT: z.preprocess((arg) => Number(arg), z.number()).default(3001),
   REQUEST_PER_HOUR: z.preprocess((arg) => Number(arg), z.number()).default(150),
+  JWT_SECRET: z.string(),
 
   // DB
   MONGO_URI: z.string(),
