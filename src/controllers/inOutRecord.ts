@@ -3,7 +3,7 @@ import InOutRecordHandler from "@/handlers/Db/inOutRecord";
 import { TagHandler } from "@/handlers/Db/tag";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
-import { InOutRecord } from "@/types/InOut";
+import { InOutRecord, InOutRecordType } from "@/types/InOut";
 import { NextFunction, Response } from "express";
 import { z } from "zod";
 
@@ -13,7 +13,10 @@ export const createRecord = asyncHandler(
     const amount = Number(record.amount);
     if (!amount) return next(new AppError("Invalid amount", 400));
 
-    const tag = await TagHandler.findOne({ _id: record.tag });
+    const tag = await TagHandler.findOne({
+      _id: record.tag,
+      user: req.user._id,
+    });
     if (!tag) return next(new AppError("Invalid tag", 400));
 
     const createdRecord = await InOutRecordHandler.create({
@@ -33,7 +36,7 @@ export const removeRecord = asyncHandler(
     if (!record) return next(new AppError("Record doesnt exist", 404));
 
     if (record?.user?.toString() !== req?.user?._id?.toString())
-      return next(new AppError("You can't delete this record", 401));
+      return next(new AppError("Record not owned", 401));
 
     const deleted = await InOutRecordHandler.delete({
       _id: recordId,
@@ -72,11 +75,15 @@ export const getInOutRecords = asyncHandler(
 
     const limit = Number(req.query.limit) || 10;
     const page = Number(req.query.page) || 1;
+    const recordType = InOutRecordType.optional().parse(req.query.recordType);
 
-    const records = await InOutRecordHandler.find(
-      { user: userId },
-      { limit, offset: (page - 1) * limit },
-    );
+    let query: Partial<InOutRecord> = { user: userId };
+    if (recordType) query = { ...query, type: recordType };
+
+    const records = await InOutRecordHandler.find(query, {
+      limit,
+      offset: (page - 1) * limit,
+    });
 
     res.json({ records });
   },

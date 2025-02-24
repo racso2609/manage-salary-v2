@@ -1,27 +1,11 @@
 import { beforeAll, expect, test, afterEach } from "vitest";
 import { DbTestDescribe } from "./utils/describes";
 import { Tag } from "@/types/Tags";
-import { fetcher } from "./utils/fetchers";
 import { createUser, login } from "./utils/users";
 import { ALICE, BOB } from "./constants/users";
 import { User } from "@/types/Db/user";
 import { TagHandler } from "@/handlers/Db/tag";
-
-const createTag = async (tag: Tag, token: string) => {
-  return fetcher.post("/api/tags").send(tag).set("Authorization", token);
-};
-
-const deleteTag = async (tagId: string, token: string) => {
-  return fetcher.delete(`/api/tags/${tagId}`).set("Authorization", token);
-};
-
-const getTag = async (tagId: string, token: string) => {
-  return fetcher.get(`/api/tags/${tagId}`).set("Authorization", token);
-};
-
-const getTags = async (token: string) => {
-  return fetcher.get(`/api/tags`).set("Authorization", token);
-};
+import { createTag, deleteTag, getTags, getTag } from "./utils/tags";
 
 DbTestDescribe("Tags", () => {
   let token: string;
@@ -99,5 +83,11 @@ DbTestDescribe("Tags", () => {
   });
 
   test("getTag: revert not your tag");
-  test("getTag");
+  test("getTag", async () => {
+    const tagCreationResponse = await createTag(tag, token);
+    const tagResponse = await getTag(tagCreationResponse.body.tag._id, token);
+
+    expect(tagResponse.body.tag.name).toBe(tag.name);
+    expect(tagResponse.body.tag.user).toBe(user._id);
+  });
 });

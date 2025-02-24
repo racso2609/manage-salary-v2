@@ -9,8 +9,11 @@ import { Router } from "express";
 
 const inOutRecordRouter = Router();
 
-inOutRecordRouter.route("/").get(protect, getInOutRecords).post(createRecord);
+inOutRecordRouter
+  .route("/")
+  .get(protect, getInOutRecords)
+  .post(protect, createRecord);
 inOutRecordRouter.get("/dashboard", protect, getDashboardInfo);
-inOutRecordRouter.get("/:recordId", protect, removeRecord);
+inOutRecordRouter.delete("/:recordId", protect, removeRecord);
 
 export default inOutRecordRouter;

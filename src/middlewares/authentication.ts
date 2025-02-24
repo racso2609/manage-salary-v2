@@ -10,9 +10,8 @@ passport.use(
       if (!isValidToken) return done(null, false);
 
       const user = await UsersHandler.findOne({ token: token });
-      if (!user) {
-        return done(null, false);
-      }
+      if (!user) return done(null, false);
+
       return done(null, user, { scope: "all" });
     } catch (error) {
       return done(error);
