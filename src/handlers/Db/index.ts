@@ -6,7 +6,6 @@ import {
   PipelineStage,
   isValidObjectId,
   Types,
-  Document,
 } from "mongoose";
 import "@/models/index";
 import { OverrideDbParams, DbRepository as Repository } from "@/types/db";
@@ -29,12 +28,12 @@ export class DbRepository<T> implements Repository<T> {
     );
     const aggregateQuery: PipelineStage[] = [{ $match: parsedQuery }];
 
+    if (overrideDbParams.offset)
+      aggregateQuery.push({ $skip: overrideDbParams.offset });
+
     if (overrideDbParams.limit) {
       aggregateQuery.push({ $limit: overrideDbParams.limit });
     }
-
-    if (overrideDbParams.offset)
-      aggregateQuery.push({ $skip: overrideDbParams.offset });
 
     if (overrideDbParams?.sort) {
       const parsedSort = Object.keys(overrideDbParams.sort).reduce(

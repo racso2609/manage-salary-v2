@@ -64,7 +64,7 @@ DbTestDescribe("inOutRecords", () => {
     record = {
       description: "putas",
       tag: tagId,
-      amount: "1",
+      amount: 1,
       type: "in",
       currency: "usd",
     };
@@ -150,12 +150,12 @@ DbTestDescribe("inOutRecords", () => {
     await createRecord({ ...record, type: "out" }, token);
     await createRecord(record, token2);
 
-    const response = await getRecords(token, { page: 1, limit: 1 });
+    const response = await getRecords(token, { page: 0, limit: 1 });
     expect(response.statusCode).toBe(200);
     expect(response.body.records.length).toBe(1);
     expect(response.body.records.at(0).type).toBe("in");
 
-    const response2 = await getRecords(token, { page: 2, limit: 1 });
+    const response2 = await getRecords(token, { page: 1, limit: 1 });
     expect(response2.statusCode).toBe(200);
     expect(response2.body.records.at(0).type).toBe("out");
   });
@@ -175,11 +175,15 @@ DbTestDescribe("inOutRecords", () => {
   });
 
   test("get dashboard records", async () => {
-    await createRecord(record, token);
+    await createRecord({ ...record, amount: 10 }, token);
     await createRecord({ ...record, type: "out" }, token);
     await createRecord(record, token2);
 
     const response = await getDashboardInfo(token);
     expect(response.statusCode).toBe(200);
+
+    expect(response.body.records.length).toBe(2);
+    expect(response.body.records.map((a) => a._id).join("/")).toBe("out/in");
+    expect(response.body.total).toBe(9);
   });
 });

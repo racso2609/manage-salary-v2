@@ -4,7 +4,7 @@ export const IN_OUT_RECORD_TYPES = ["in", "out"] as const;
 
 export const InOutRecord = z.object({
   // amount incoming
-  amount: z.string(),
+  amount: z.preprocess((a) => Number(a), z.number()),
   type: z.enum(IN_OUT_RECORD_TYPES),
   currency: z.preprocess((a) => a?.toString().toUpperCase(), z.string()),
   user: z.unknown(),
