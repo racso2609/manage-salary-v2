@@ -23,6 +23,7 @@ export const createRecord = asyncHandler(
       ...record,
       user: req.user._id,
     });
+    console.log("=== createRecord", createdRecord);
 
     res.json({ record: createdRecord });
   },

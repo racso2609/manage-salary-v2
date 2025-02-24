@@ -3,7 +3,7 @@ import { model, Schema } from "mongoose";
 
 const InOutRecordSchema = new Schema<InOutRecord>(
   {
-    amount: { type: Number, required: true },
+    amount: { type: BigInt, required: true },
     description: String,
     currency: String,
     type: {

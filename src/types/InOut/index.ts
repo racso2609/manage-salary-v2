@@ -3,8 +3,8 @@ import { z } from "zod";
 export const IN_OUT_RECORD_TYPES = ["in", "out"] as const;
 
 export const InOutRecord = z.object({
-  // amount incoming
-  amount: z.preprocess((a) => Number(a), z.number()),
+  // amount incoming if currency is usd 2 zeros for decimals
+  amount: z.preprocess((a) => BigInt(a?.toString() || 0), z.bigint()),
   type: z.enum(IN_OUT_RECORD_TYPES),
   currency: z.preprocess((a) => a?.toString().toUpperCase(), z.string()),
   user: z.unknown(),

@@ -8,6 +8,7 @@ import morgan from "morgan";
 import { logger } from "./handlers/Loggers";
 import { globalErrorController } from "./middlewares/globalErrorHandler";
 import router from "./routes";
+import "@/utils/serialization";
 
 const app = express();
 

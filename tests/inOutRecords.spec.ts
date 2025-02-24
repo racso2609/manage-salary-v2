@@ -7,12 +7,16 @@ import { createUser, login } from "./utils/users";
 import { ALICE, BOB } from "./constants/users";
 import { createTag } from "./utils/tags";
 import InOutRecordHandler from "@/handlers/Db/inOutRecord";
+import { cleanData } from "@/utils";
 
 const createRecord = async (
   record: Omit<InOutRecord, "user">,
   token: string,
 ) => {
-  return fetcher.post("/api/records").send(record).set("Authorization", token);
+  return fetcher
+    .post("/api/records")
+    .send(cleanData(record))
+    .set("Authorization", token);
 };
 
 const removeRecord = async (recordId: string, token: string) => {
@@ -64,7 +68,7 @@ DbTestDescribe("inOutRecords", () => {
     record = {
       description: "putas",
       tag: tagId,
-      amount: 1,
+      amount: 1n,
       type: "in",
       currency: "usd",
     };
@@ -75,7 +79,7 @@ DbTestDescribe("inOutRecords", () => {
   });
 
   test("create records: Invalid amount", async () => {
-    const response = await createRecord({ ...record, amount: "0" }, token);
+    const response = await createRecord({ ...record, amount: 0n }, token);
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe("Invalid amount");
   });
@@ -89,13 +93,14 @@ DbTestDescribe("inOutRecords", () => {
       { ...record, type: "out", currency: "USD" },
       token,
     );
+    console.log("=== response.body", response.body, response.text);
     expect(response.statusCode).toBe(200);
 
     expect(response.body.record.user.toString()).toBe(user?._id?.toString());
     expect(response.body.record.description).toBe(record.description);
     expect(response.body.record.currency).toBe(record.currency.toUpperCase());
     expect(response.body.record.type).toBe("out");
-    expect(response.body.record.amount).toBe(record.amount);
+    expect(response.body.record.amount).toBe(record.amount.toString());
     expect(response.body.record.tag).toBe(record.tag);
   });
   test("create record (in)", async () => {
@@ -106,7 +111,7 @@ DbTestDescribe("inOutRecords", () => {
     expect(response.body.record.description).toBe(record.description);
     expect(response.body.record.currency).toBe(record.currency.toUpperCase());
     expect(response.body.record.type).toBe(record.type);
-    expect(response.body.record.amount).toBe(record.amount);
+    expect(response.body.record.amount).toBe(record.amount.toString());
     expect(response.body.record.tag).toBe(record.tag);
   });
 
@@ -175,7 +180,7 @@ DbTestDescribe("inOutRecords", () => {
   });
 
   test("get dashboard records", async () => {
-    await createRecord({ ...record, amount: 10 }, token);
+    await createRecord({ ...record, amount: 10n }, token);
     await createRecord({ ...record, type: "out" }, token);
     await createRecord(record, token2);
 

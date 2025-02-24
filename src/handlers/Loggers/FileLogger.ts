@@ -1,4 +1,5 @@
 import environment from "@/env";
+import { cleanData } from "@/utils";
 import fs from "fs";
 import path from "path";
 
@@ -10,34 +11,7 @@ export class FileLogger {
   }
 
   protected _parseMessage(messages: unknown): string {
-    if (!messages) return "";
-    const isArray = Array.isArray(messages);
-    if (isArray)
-      return JSON.stringify(
-        messages.map((message) => this._parseMessage(message)),
-      );
-
-    const isObject = typeof messages === "object";
-
-    if (isObject)
-      return JSON.stringify(
-        Object.keys(messages).reduce(
-          (acc, key) => {
-            // @ts-expect-error this type of data should have keys
-            const value = messages[key];
-            const sanitizedValue = this._parseMessage(value);
-
-            acc[key] = sanitizedValue;
-            return acc;
-          },
-          {} as Record<string, unknown>,
-        ),
-      );
-    const toStringTypes = ["string", "number", "bigint", "boolean"];
-
-    if (toStringTypes.includes(typeof messages)) return messages.toString();
-
-    return JSON.stringify(messages);
+    return JSON.stringify(cleanData(messages))
   }
 
   protected _print(
