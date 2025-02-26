@@ -7,7 +7,7 @@ export class FileLogger {
   protected filePath: string;
 
   constructor(public fileName: string = `log-${environment.NODE_ENV}.log`) {
-    this.filePath = path.join(__dirname, "..", "..", fileName);
+    this.filePath = path.join(__dirname, "..", "..", "..", fileName);
   }
 
   protected _parseMessage(messages: unknown): string {

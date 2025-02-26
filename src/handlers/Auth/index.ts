@@ -8,7 +8,9 @@ class AuthHandler implements AuthHandler {
   getToken(user: User) {
     const userData = User.omit({ password: true }).parse(user);
 
-    return jwt.sign(userData, this.secret, { expiresIn: "7d" });
+    return jwt.sign({ userName: userData.userName }, this.secret, {
+      expiresIn: "7d",
+    });
   }
 
   validateToken(token: string) {
