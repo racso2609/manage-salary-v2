@@ -7,7 +7,7 @@
     "start": "NODE_ENV=prod node ./dist/src/index.js",
     "prestart": "pnpm build",
     "dev": "NODE_ENV=dev npx tsx --watch-path='./src' src/index.ts",
-    "build": "pnpx tsc",
+    "build": "tsc",
     "test": "NODE_ENV=test vitest"
   },
   "keywords": [],
@@ -44,6 +44,7 @@
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-http-bearer": "^1.0.1",
+    "tsc": "^2.0.4",
     "zod": "^3.24.2"
   }
 }
