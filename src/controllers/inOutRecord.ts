@@ -92,6 +92,12 @@ export const getInOutRecords = asyncHandler(
     const records = await InOutRecordHandler.find(query, {
       limit,
       offset: page * limit,
+      populates: [
+        {
+          path: "tag",
+          unique: true,
+        },
+      ],
     });
 
     res.json({ records });
