@@ -53,9 +53,6 @@ importers:
       passport-http-bearer:
         specifier: ^1.0.1
         version: 1.0.1
-      tsc:
-        specifier: ^2.0.4
-        version: 2.0.4
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -2203,10 +2200,6 @@ packages:
     engines: {node: '>=18.12'}
     peerDependencies:
       typescript: '>=4.8.4'
-
-  tsc@2.0.4:
-    resolution: {integrity: sha512-fzoSieZI5KKJVBYGvwbVZs/J5za84f2lSTLPYf6AGiIf43tZ3GNrI1QzTLcjtyDDP4aLxd46RTZq1nQxe7+k5Q==}
-    hasBin: true
 
   tsconfck@3.1.5:
     resolution: {integrity: sha512-CLDfGgUp7XPswWnezWwsCRxNmgQjhYq3VXHM0/XIRxhVrKw0M1if9agzryh1QS3nxjCROvV+xWxoJO1YctzzWg==}
@@ -5043,8 +5036,6 @@ snapshots:
   ts-api-utils@2.0.1(typescript@5.7.3):
     dependencies:
       typescript: 5.7.3
-
-  tsc@2.0.4: {}
 
   tsconfck@3.1.5(typescript@5.7.3):
     optionalDependencies:
