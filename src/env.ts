@@ -2,7 +2,7 @@ import { configDotenv } from "dotenv";
 import { ENV } from "./types/env";
 
 configDotenv({
-  path: `.env.${process.env.NODE_ENV}`,
+  path: [`.env.${process.env.NODE_ENV}`, ".env"],
   debug: process.env.NODE_ENV !== "prod",
 });
 
