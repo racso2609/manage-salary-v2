@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersHandler = void 0;
-const user_1 = require("@/types/Db/user");
+const user_1 = require("../../types/Db/user");
 const _1 = require(".");
-const user_2 = __importDefault(require("@/models/user"));
+const user_2 = __importDefault(require("../../models/user"));
 class UserHandler extends _1.DbRepository {
     constructor() {
         super(user_2.default);

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DbRepository = void 0;
 const mongoose_1 = require("mongoose");
-require("@/models/index");
+require("../../models/index");
 class DbRepository {
     constructor(model) {
         this.model = model;

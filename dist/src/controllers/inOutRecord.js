@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInOutRecords = exports.getDashboardInfo = exports.removeRecord = exports.createRecord = void 0;
-const callbacks_1 = require("@/handlers/callbacks");
-const inOutRecord_1 = __importDefault(require("@/handlers/Db/inOutRecord"));
-const tag_1 = require("@/handlers/Db/tag");
-const AppError_1 = require("@/handlers/Errors/AppError");
-const InOut_1 = require("@/types/InOut");
+const callbacks_1 = require("../handlers/callbacks");
+const inOutRecord_1 = __importDefault(require("../handlers/Db/inOutRecord"));
+const tag_1 = require("../handlers/Db/tag");
+const AppError_1 = require("../handlers/Errors/AppError");
+const InOut_1 = require("../types/InOut");
 const zod_1 = require("zod");
 exports.createRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     const record = InOut_1.InOutRecord.omit({ user: true }).parse(req.body);

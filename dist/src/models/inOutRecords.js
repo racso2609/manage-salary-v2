@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const InOut_1 = require("@/types/InOut");
+const InOut_1 = require("../types/InOut");
 const mongoose_1 = require("mongoose");
 const InOutRecordSchema = new mongoose_1.Schema({
     amount: { type: BigInt, required: true },

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const inOutRecord_1 = require("@/controllers/inOutRecord");
-const authentication_1 = require("@/middlewares/authentication");
+const inOutRecord_1 = require("../controllers/inOutRecord");
+const authentication_1 = require("../middlewares/authentication");
 const express_1 = require("express");
 const inOutRecordRouter = (0, express_1.Router)();
 inOutRecordRouter

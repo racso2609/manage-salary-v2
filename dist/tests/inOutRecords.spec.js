@@ -9,8 +9,8 @@ const fetchers_1 = require("./utils/fetchers");
 const users_1 = require("./utils/users");
 const users_2 = require("./constants/users");
 const tags_1 = require("./utils/tags");
-const inOutRecord_1 = __importDefault(require("@/handlers/Db/inOutRecord"));
-const utils_1 = require("@/utils");
+const inOutRecord_1 = __importDefault(require("../src/handlers/Db/inOutRecord"));
+const utils_1 = require("../src/utils");
 const createRecord = async (record, token) => {
     return fetchers_1.fetcher
         .post("/api/records")

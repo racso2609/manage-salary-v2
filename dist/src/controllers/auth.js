@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tokenStatus = exports.refreshToken = exports.signup = exports.login = void 0;
-const Auth_1 = __importDefault(require("@/handlers/Auth"));
-const callbacks_1 = require("@/handlers/callbacks");
-const users_1 = require("@/handlers/Db/users");
-const AppError_1 = require("@/handlers/Errors/AppError");
-const user_1 = require("@/types/Db/user");
+const Auth_1 = __importDefault(require("../handlers/Auth"));
+const callbacks_1 = require("../handlers/callbacks");
+const users_1 = require("../handlers/Db/users");
+const AppError_1 = require("../handlers/Errors/AppError");
+const user_1 = require("../types/Db/user");
 exports.login = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     const { email, password } = user_1.User.omit({
         token: true,

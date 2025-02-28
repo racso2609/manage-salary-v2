@@ -4,7 +4,7 @@ const vitest_1 = require("vitest");
 const describes_1 = require("./utils/describes");
 const users_1 = require("./utils/users");
 const users_2 = require("./constants/users");
-const tag_1 = require("@/handlers/Db/tag");
+const tag_1 = require("../src/handlers/Db/tag");
 const tags_1 = require("./utils/tags");
 (0, describes_1.DbTestDescribe)("Tags", () => {
     let token;

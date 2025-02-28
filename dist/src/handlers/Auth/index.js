@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const env_1 = __importDefault(require("@/env"));
-const user_1 = require("@/types/Db/user");
+const env_1 = __importDefault(require("../../env"));
+const user_1 = require("../../types/Db/user");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class AuthHandler {
     constructor(secret = env_1.default.JWT_SECRET) {

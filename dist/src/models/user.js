@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_1 = require("@/types/Db/user");
+const user_1 = require("../types/Db/user");
 const mongoose_1 = require("mongoose");
 const mongoose_bcrypt_1 = __importDefault(require("mongoose-bcrypt"));
 const userSchema = new mongoose_1.Schema({

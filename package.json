@@ -8,6 +8,7 @@
     "prestart": "pnpm build",
     "dev": "NODE_ENV=dev npx tsx --watch-path='./src' src/index.ts",
     "build": "tsc",
+    "postbuild": "tsc-alias -p ./tsconfig.json",
     "test": "NODE_ENV=test vitest"
   },
   "keywords": [],
@@ -24,6 +25,7 @@
     "eslint": "^9.21.0",
     "globals": "^16.0.0",
     "supertest": "^7.0.0",
+    "tsc-alias": "^1.8.11",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.1",
     "vite-tsconfig-paths": "^5.1.4",

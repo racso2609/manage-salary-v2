@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteTag = exports.getTag = exports.getTags = exports.createTag = void 0;
-const callbacks_1 = require("@/handlers/callbacks");
-const tag_1 = require("@/handlers/Db/tag");
-const AppError_1 = require("@/handlers/Errors/AppError");
-const Tags_1 = require("@/types/Tags");
+const callbacks_1 = require("../handlers/callbacks");
+const tag_1 = require("../handlers/Db/tag");
+const AppError_1 = require("../handlers/Errors/AppError");
+const Tags_1 = require("../types/Tags");
 exports.createTag = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     const tag = Tags_1.Tag.omit({ user: true }).parse(req.body);
     const existTag = await tag_1.TagHandler.findOne({

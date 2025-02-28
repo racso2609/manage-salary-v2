@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const describes_1 = require("./utils/describes");
-const users_1 = require("@/handlers/Db/users");
+const users_1 = require("../src/handlers/Db/users");
 const fetchers_1 = require("./utils/fetchers");
 const users_2 = require("./constants/users");
 const vitest_1 = require("vitest");

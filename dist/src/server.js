@@ -13,7 +13,7 @@ const morgan_1 = __importDefault(require("morgan"));
 const Loggers_1 = require("./handlers/Loggers");
 const globalErrorHandler_1 = require("./middlewares/globalErrorHandler");
 const routes_1 = __importDefault(require("./routes"));
-require("@/utils/serialization");
+require("./utils/serialization");
 const app = (0, express_1.default)();
 app.use(express_1.default.json({ limit: "50mb" }));
 app.use(express_1.default.urlencoded({ limit: "50mb", extended: true }));

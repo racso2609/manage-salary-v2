@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.globalErrorController = void 0;
-const env_1 = __importDefault(require("@/env"));
-const Loggers_1 = require("@/handlers/Loggers");
+const env_1 = __importDefault(require("../env"));
+const Loggers_1 = require("../handlers/Loggers");
 const sendErrorDevelopment = (error, res) => {
     Loggers_1.logger.error(error);
     res.status(error.statusCode || 500).json({
