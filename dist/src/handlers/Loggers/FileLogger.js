@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileLogger = void 0;
 const env_1 = __importDefault(require("../../env"));
-const utils_1 = require("../../utils");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 class FileLogger {
@@ -14,7 +13,7 @@ class FileLogger {
         this.filePath = path_1.default.join(__dirname, "..", "..", "..", fileName);
     }
     _parseMessage(messages) {
-        return JSON.stringify((0, utils_1.cleanData)(messages));
+        return JSON.stringify(messages);
     }
     _print(message, { filePath = this.filePath } = {}) {
         // print on console
