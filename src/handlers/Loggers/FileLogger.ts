@@ -1,5 +1,4 @@
 import environment from "@/env";
-import { cleanData } from "@/utils";
 import fs from "fs";
 import path from "path";
 
@@ -11,7 +10,7 @@ export class FileLogger {
   }
 
   protected _parseMessage(messages: unknown): string {
-    return JSON.stringify(cleanData(messages))
+    return JSON.stringify(messages)
   }
 
   protected _print(
