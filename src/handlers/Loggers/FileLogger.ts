@@ -1,5 +1,4 @@
 import environment from "@/env";
-import fs from "fs";
 import path from "path";
 
 export class FileLogger {
@@ -20,9 +19,11 @@ export class FileLogger {
     // print on console
     // eslint-disable-next-line
     console.log(message);
+    // eslint-disable-next-line
+    console.log('=== filePath', filePath)
 
     // print on log file
-    fs.appendFileSync(filePath, `[${new Date(Date.now())}]: ${message}\n`);
+    // fs.appendFileSync(filePath, `[${new Date(Date.now())}]: ${message}\n`);
   }
 
   log(...messages: unknown[]) {

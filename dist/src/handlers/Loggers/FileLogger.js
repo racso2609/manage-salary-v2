@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileLogger = void 0;
 const env_1 = __importDefault(require("../../env"));
-const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 class FileLogger {
     constructor(fileName = `log-${env_1.default.NODE_ENV}.log`) {
@@ -19,8 +18,10 @@ class FileLogger {
         // print on console
         // eslint-disable-next-line
         console.log(message);
+        // eslint-disable-next-line
+        console.log('=== filePath', filePath);
         // print on log file
-        fs_1.default.appendFileSync(filePath, `[${new Date(Date.now())}]: ${message}\n`);
+        // fs.appendFileSync(filePath, `[${new Date(Date.now())}]: ${message}\n`);
     }
     log(...messages) {
         const stringifyMessage = this._parseMessage(messages);
