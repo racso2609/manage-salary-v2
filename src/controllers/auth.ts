@@ -4,7 +4,6 @@ import { UsersHandler } from "@/handlers/Db/users";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest, User } from "@/types/Db/user";
 import { NextFunction, Request, Response } from "express";
-import { token } from "morgan";
 
 export const login = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {

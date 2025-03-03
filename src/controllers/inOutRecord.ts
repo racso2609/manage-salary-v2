@@ -61,6 +61,7 @@ export const getDashboardInfo = asyncHandler(
           counter: { $sum: 1 },
           total: { $sum: "$amount" },
         },
+        sort: { createdAt: -1 },
       },
     );
 
@@ -92,6 +93,7 @@ export const getInOutRecords = asyncHandler(
     const records = await InOutRecordHandler.find(query, {
       limit,
       offset: page * limit,
+      sort: { createdAt: -1 },
       populates: [
         {
           path: "tag",
