@@ -82,9 +82,25 @@ export class DbRepository<T> implements Repository<T> {
 
   async findOne(
     query: FilterQuery<T>,
-    _overrideDbParams: OverrideDbParams = {},
+    overrideDbParams: OverrideDbParams = {},
   ) {
-    return this.model.findOne(query);
+    let aggregate = this.model.findOne(query);
+
+    if (overrideDbParams.sort)
+      aggregate = aggregate.sort(overrideDbParams.sort);
+
+    if (overrideDbParams.offset)
+      aggregate = aggregate.skip(overrideDbParams.offset);
+
+    if (overrideDbParams.limit)
+      aggregate = aggregate.limit(overrideDbParams.limit);
+
+    // TODO: add populate
+    // if (overrideDbParams.populates?.length)
+    // aggregate = aggregate.populate(overrideDbParams.populates);
+
+    // const a = this.model.findOne(query);
+    return await aggregate.exec();
   }
 
   async create(data: T) {
