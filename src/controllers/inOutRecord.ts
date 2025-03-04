@@ -93,7 +93,7 @@ export const getInOutRecords = asyncHandler(
     const records = await InOutRecordHandler.find(query, {
       limit,
       offset: page * limit,
-      sort: { createdAt: -1 },
+      sort: { createdAt: 1 },
       populates: [
         {
           path: "tag",
