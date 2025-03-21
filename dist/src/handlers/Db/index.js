@@ -15,11 +15,6 @@ class DbRepository {
             return acc;
         }, {});
         const aggregateQuery = [{ $match: parsedQuery }];
-        if (overrideDbParams.offset)
-            aggregateQuery.push({ $skip: overrideDbParams.offset });
-        if (overrideDbParams.limit) {
-            aggregateQuery.push({ $limit: overrideDbParams.limit });
-        }
         if (overrideDbParams?.sort) {
             const parsedSort = Object.keys(overrideDbParams.sort).reduce((acc, key) => {
                 if (overrideDbParams.sort)
@@ -27,6 +22,11 @@ class DbRepository {
                 return acc;
             }, {});
             aggregateQuery.push({ $sort: parsedSort });
+        }
+        if (overrideDbParams.offset)
+            aggregateQuery.push({ $skip: overrideDbParams.offset });
+        if (overrideDbParams.limit) {
+            aggregateQuery.push({ $limit: overrideDbParams.limit });
         }
         if (overrideDbParams?.populates?.length) {
             overrideDbParams.populates.forEach(({ path: populate, unique }) => {
@@ -49,15 +49,25 @@ class DbRepository {
         }
         if (overrideDbParams?.group)
             aggregateQuery.push({ $group: overrideDbParams.group });
-        // isValidObjectId()
         return aggregateQuery;
     }
     find(query, overrideDbParams = {}) {
         const aggregateQuery = this._manageQuery(query, overrideDbParams);
         return this.aggregate(aggregateQuery);
     }
-    async findOne(query, _overrideDbParams = {}) {
-        return this.model.findOne(query);
+    async findOne(query, overrideDbParams = {}) {
+        let aggregate = this.model.findOne(query);
+        if (overrideDbParams.sort)
+            aggregate = aggregate.sort(overrideDbParams.sort);
+        if (overrideDbParams.offset)
+            aggregate = aggregate.skip(overrideDbParams.offset);
+        if (overrideDbParams.limit)
+            aggregate = aggregate.limit(overrideDbParams.limit);
+        // TODO: add populate
+        // if (overrideDbParams.populates?.length)
+        // aggregate = aggregate.populate(overrideDbParams.populates);
+        // const a = this.model.findOne(query);
+        return await aggregate.exec();
     }
     async create(data) {
         return await this.model.create(data);

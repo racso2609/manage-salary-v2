@@ -50,6 +50,8 @@ exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
             counter: { $sum: 1 },
             total: { $sum: "$amount" },
         },
+        sort: { createdAt: -1 },
+        populates: [{ path: "tag", unique: true }],
     });
     const total = records.reduce((acc, data) => {
         if (data._id === "in")
@@ -68,12 +70,16 @@ exports.getInOutRecords = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const limit = Number(req.query.limit) || 10;
     const page = Number(req.query.page) || 0;
     const recordType = InOut_1.InOutRecordType.optional().parse(req.query.recordType);
+    const tag = zod_1.z.string().optional().parse(req.query.tag);
     let query = { user: userId };
     if (recordType)
         query = { ...query, type: recordType };
+    if (tag)
+        query = { ...query, tag };
     const records = await inOutRecord_1.default.find(query, {
         limit,
         offset: page * limit,
+        sort: { createdAt: -1 },
         populates: [
             {
                 path: "tag",
