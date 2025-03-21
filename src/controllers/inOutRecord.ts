@@ -62,6 +62,7 @@ export const getDashboardInfo = asyncHandler(
           total: { $sum: "$amount" },
         },
         sort: { createdAt: -1 },
+        populates: [{ path: "tag", unique: true }],
       },
     );
 
@@ -86,9 +87,11 @@ export const getInOutRecords = asyncHandler(
     const limit = Number(req.query.limit) || 10;
     const page = Number(req.query.page) || 0;
     const recordType = InOutRecordType.optional().parse(req.query.recordType);
+    const tag = z.string().optional().parse(req.query.tag);
 
     let query: Partial<InOutRecord> = { user: userId };
     if (recordType) query = { ...query, type: recordType };
+    if (tag) query = { ...query, tag };
 
     const records = await InOutRecordHandler.find(query, {
       limit,

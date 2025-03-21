@@ -28,13 +28,6 @@ export class DbRepository<T> implements Repository<T> {
     );
     const aggregateQuery: PipelineStage[] = [{ $match: parsedQuery }];
 
-    if (overrideDbParams.offset)
-      aggregateQuery.push({ $skip: overrideDbParams.offset });
-
-    if (overrideDbParams.limit) {
-      aggregateQuery.push({ $limit: overrideDbParams.limit });
-    }
-
     if (overrideDbParams?.sort) {
       const parsedSort = Object.keys(overrideDbParams.sort).reduce(
         (acc, key) => {
@@ -47,6 +40,14 @@ export class DbRepository<T> implements Repository<T> {
 
       aggregateQuery.push({ $sort: parsedSort });
     }
+
+    if (overrideDbParams.offset)
+      aggregateQuery.push({ $skip: overrideDbParams.offset });
+
+    if (overrideDbParams.limit) {
+      aggregateQuery.push({ $limit: overrideDbParams.limit });
+    }
+
     if (overrideDbParams?.populates?.length) {
       overrideDbParams.populates.forEach(({ path: populate, unique }) => {
         aggregateQuery.push({
@@ -69,8 +70,6 @@ export class DbRepository<T> implements Repository<T> {
 
     if (overrideDbParams?.group)
       aggregateQuery.push({ $group: overrideDbParams.group });
-
-    // isValidObjectId()
 
     return aggregateQuery;
   }
