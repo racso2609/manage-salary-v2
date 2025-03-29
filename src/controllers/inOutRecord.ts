@@ -5,6 +5,7 @@ import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
 import { InOutRecord, InOutRecordType } from "@/types/InOut";
 import { NextFunction, Response } from "express";
+import { FilterQuery } from "mongoose";
 import { z } from "zod";
 
 export const createRecord = asyncHandler(
@@ -23,7 +24,6 @@ export const createRecord = asyncHandler(
       ...record,
       user: req.user._id,
     });
-    console.log("=== createRecord", createdRecord);
 
     res.json({ record: createdRecord });
   },
@@ -51,20 +51,32 @@ export const removeRecord = asyncHandler(
 export const getDashboardInfo = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
     const userId = req?.user?._id?.toString();
+    const tag = z.string().optional().parse(req.query.tag);
+    const from = z.string().optional().parse(req.query.from);
+    const to = z.string().optional().parse(req.query.to);
 
-    const records = await InOutRecordHandler.find(
-      { user: userId },
-      {
-        group: {
-          _id: "$type",
-          records: { $push: "$$ROOT" },
-          counter: { $sum: 1 },
-          total: { $sum: "$amount" },
-        },
-        sort: { createdAt: -1 },
-        populates: [{ path: "tag", unique: true }],
+    const query = {
+      user: userId,
+    };
+
+    if (tag) query["tag"] = tag;
+    if (from && to) {
+      query["createdAt"] = {
+        $gte: new Date(from),
+        $lte: new Date(to),
+      };
+    }
+
+    const records = await InOutRecordHandler.find(query, {
+      group: {
+        _id: "$type",
+        records: { $push: "$$ROOT" },
+        counter: { $sum: 1 },
+        total: { $sum: "$amount" },
       },
-    );
+      sort: { createdAt: -1 },
+      populates: [{ path: "tag", unique: true }],
+    });
 
     const total = records.reduce((acc, data) => {
       if (data._id === "in") acc += data.total;
@@ -88,10 +100,21 @@ export const getInOutRecords = asyncHandler(
     const page = Number(req.query.page) || 0;
     const recordType = InOutRecordType.optional().parse(req.query.recordType);
     const tag = z.string().optional().parse(req.query.tag);
+    const from = z.string().optional().parse(req.query.from);
+    const to = z.string().optional().parse(req.query.to);
 
-    let query: Partial<InOutRecord> = { user: userId };
+    let query: FilterQuery<InOutRecord> = { user: userId };
     if (recordType) query = { ...query, type: recordType };
     if (tag) query = { ...query, tag };
+
+    if (from && to)
+      query = {
+        ...query,
+        createdAt: {
+          $gte: new Date(from),
+          $lte: new Date(to),
+        },
+      };
 
     const records = await InOutRecordHandler.find(query, {
       limit,

@@ -25,7 +25,6 @@ exports.createRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
         ...record,
         user: req.user._id,
     });
-    console.log("=== createRecord", createdRecord);
     res.json({ record: createdRecord });
 });
 exports.removeRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
@@ -43,7 +42,21 @@ exports.removeRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
 });
 exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const userId = req?.user?._id?.toString();
-    const records = await inOutRecord_1.default.find({ user: userId }, {
+    const tag = zod_1.z.string().optional().parse(req.query.tag);
+    const from = zod_1.z.string().optional().parse(req.query.from);
+    const to = zod_1.z.string().optional().parse(req.query.to);
+    const query = {
+        user: userId,
+    };
+    if (tag)
+        query["tag"] = tag;
+    if (from && to) {
+        query["createdAt"] = {
+            $gte: new Date(from),
+            $lte: new Date(to),
+        };
+    }
+    const records = await inOutRecord_1.default.find(query, {
         group: {
             _id: "$type",
             records: { $push: "$$ROOT" },
@@ -71,11 +84,21 @@ exports.getInOutRecords = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const page = Number(req.query.page) || 0;
     const recordType = InOut_1.InOutRecordType.optional().parse(req.query.recordType);
     const tag = zod_1.z.string().optional().parse(req.query.tag);
+    const from = zod_1.z.string().optional().parse(req.query.from);
+    const to = zod_1.z.string().optional().parse(req.query.to);
     let query = { user: userId };
     if (recordType)
         query = { ...query, type: recordType };
     if (tag)
         query = { ...query, tag };
+    if (from && to)
+        query = {
+            ...query,
+            createdAt: {
+                $gte: new Date(from),
+                $lte: new Date(to),
+            },
+        };
     const records = await inOutRecord_1.default.find(query, {
         limit,
         offset: page * limit,

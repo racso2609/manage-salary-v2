@@ -11,5 +11,7 @@ exports.InOutRecord = zod_1.z.object({
     user: zod_1.z.unknown(),
     description: zod_1.z.string(),
     tag: zod_1.z.unknown(),
+    createdAt: zod_1.z.date().optional(),
+    updatedAt: zod_1.z.date().optional(),
 });
 exports.InOutRecordType = zod_1.z.enum(exports.IN_OUT_RECORD_TYPES);
