@@ -3,7 +3,11 @@ import InOutRecordHandler from "@/handlers/Db/inOutRecord";
 import { TagHandler } from "@/handlers/Db/tag";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
-import { InOutRecord, InOutRecordType } from "@/types/InOut";
+import {
+  IN_OUT_RECORD_TYPES,
+  InOutRecord,
+  InOutRecordType,
+} from "@/types/InOut";
 import { NextFunction, Response } from "express";
 import { FilterQuery } from "mongoose";
 import { z } from "zod";
@@ -67,27 +71,47 @@ export const getDashboardInfo = asyncHandler(
       };
     }
 
-    const records = await InOutRecordHandler.find(query, {
+    const recordsByDate = await InOutRecordHandler.find(query, {
       group: {
-        _id: "$type",
+        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
         records: { $push: "$$ROOT" },
         counter: { $sum: 1 },
-        total: { $sum: "$amount" },
+        // if record is type "in", sum amount, else sum negative amount
+        total: {
+          $sum: {
+            $cond: [
+              { $eq: ["$type", "in"] },
+              "$amount",
+              { $multiply: ["$amount", -1] },
+            ],
+          },
+        },
       },
       sort: { createdAt: -1 },
       populates: [{ path: "tag", unique: true }],
     });
 
-    const total = records.reduce((acc, data) => {
-      if (data._id === "in") acc += data.total;
-      else acc -= data.total;
+    const total = recordsByDate.reduce((acc, record) => {
+      return acc + record.total;
+    }, 0);
 
-      return acc;
+    const records = await InOutRecordHandler.find(query);
+
+    const totalIn = records.reduce((acc, record) => {
+      return acc + (record.type === "in" ? record.amount : 0);
+    }, 0);
+
+    const totalOut = records.reduce((acc, record) => {
+      return acc + (record.type === "out" ? record.amount : 0);
     }, 0);
 
     res.json({
-      records,
+      records: recordsByDate.sort((a, b) => {
+        return new Date(b._id).getTime() - new Date(a._id).getTime();
+      }),
       total,
+      totalIn,
+      totalOut,
     });
   },
 );
