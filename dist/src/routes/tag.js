@@ -6,4 +6,5 @@ const express_1 = require("express");
 const tagRouter = (0, express_1.Router)();
 tagRouter.route("/").get(authentication_1.protect, tag_1.getTags).post(authentication_1.protect, tag_1.createTag);
 tagRouter.route("/:tagId").delete(authentication_1.protect, tag_1.deleteTag).get(authentication_1.protect, tag_1.getTag);
+tagRouter.route("/:tagId/info").get(authentication_1.protect, tag_1.tagInfo);
 exports.default = tagRouter;

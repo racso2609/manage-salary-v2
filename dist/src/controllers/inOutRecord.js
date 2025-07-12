@@ -56,26 +56,42 @@ exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
             $lte: new Date(to),
         };
     }
-    const records = await inOutRecord_1.default.find(query, {
+    const recordsByDate = await inOutRecord_1.default.find(query, {
         group: {
-            _id: "$type",
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
             records: { $push: "$$ROOT" },
             counter: { $sum: 1 },
-            total: { $sum: "$amount" },
+            // if record is type "in", sum amount, else sum negative amount
+            total: {
+                $sum: {
+                    $cond: [
+                        { $eq: ["$type", "in"] },
+                        "$amount",
+                        { $multiply: ["$amount", -1] },
+                    ],
+                },
+            },
         },
         sort: { createdAt: -1 },
         populates: [{ path: "tag", unique: true }],
     });
-    const total = records.reduce((acc, data) => {
-        if (data._id === "in")
-            acc += data.total;
-        else
-            acc -= data.total;
-        return acc;
+    const total = recordsByDate.reduce((acc, record) => {
+        return acc + record.total;
+    }, 0);
+    const records = await inOutRecord_1.default.find(query);
+    const totalIn = records.reduce((acc, record) => {
+        return acc + (record.type === "in" ? record.amount : 0);
+    }, 0);
+    const totalOut = records.reduce((acc, record) => {
+        return acc + (record.type === "out" ? record.amount : 0);
     }, 0);
     res.json({
-        records,
+        records: recordsByDate.sort((a, b) => {
+            return new Date(b._id).getTime() - new Date(a._id).getTime();
+        }),
         total,
+        totalIn,
+        totalOut,
     });
 });
 exports.getInOutRecords = (0, callbacks_1.asyncHandler)(async (req, res) => {
