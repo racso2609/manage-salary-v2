@@ -11,6 +11,7 @@ export const InOutRecord = z.object({
   description: z.string(),
   tag: z.unknown(),
   date: z.date(),
+  externalId: z.string().optional(),
 
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),

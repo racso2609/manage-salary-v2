@@ -12,6 +12,7 @@ exports.InOutRecord = zod_1.z.object({
     description: zod_1.z.string(),
     tag: zod_1.z.unknown(),
     date: zod_1.z.date(),
+    externalId: zod_1.z.string().optional(),
     createdAt: zod_1.z.date().optional(),
     updatedAt: zod_1.z.date().optional(),
 });
