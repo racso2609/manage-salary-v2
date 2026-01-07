@@ -5,15 +5,17 @@ const zod_1 = require("zod");
 exports.IN_OUT_RECORD_TYPES = ["in", "out"];
 exports.InOutRecord = zod_1.z.object({
     // amount incoming if currency is usd 2 zeros for decimals
-    amount: zod_1.z.preprocess((a) => BigInt(a?.toString() || 0), zod_1.z.bigint()),
+    amount: zod_1.z.preprocess((a) => BigInt(Number(a?.toString()).toFixed(0) || 0), zod_1.z.bigint()),
     type: zod_1.z.enum(exports.IN_OUT_RECORD_TYPES),
     currency: zod_1.z.preprocess((a) => a?.toString().toUpperCase(), zod_1.z.string()),
     user: zod_1.z.unknown(),
     description: zod_1.z.string(),
     tag: zod_1.z.unknown(),
-    date: zod_1.z.preprocess((a) => ["string", "number"].includes(typeof a)
-        ? new Date(a)
-        : null, zod_1.z.date()),
+    date: zod_1.z.preprocess((a) => {
+        return ["string", "number", "Date"].includes(typeof a)
+            ? new Date(a)
+            : a;
+    }, zod_1.z.date()),
     externalId: zod_1.z.string().optional(),
     secondaryAmount: zod_1.z
         .preprocess((a) => BigInt(a?.toString() || 0), zod_1.z.bigint())

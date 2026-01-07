@@ -28,10 +28,11 @@ exports.createRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     res.json({ record: createdRecord });
 });
 exports.createRecords = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
-    const records = zod_1.z
+    const rawRecords = zod_1.z
         .array(InOut_1.InOutRecord.omit({ user: true }))
         .parse(req.body.records);
-    for (const record of records) {
+    const records = [];
+    for (const record of rawRecords) {
         const amount = Number(record.amount);
         if (!amount)
             return next(new AppError_1.AppError("Invalid amount in records", 400));
@@ -43,6 +44,12 @@ exports.createRecords = (0, callbacks_1.asyncHandler)(async (req, res, next) => 
             if (!tag)
                 return next(new AppError_1.AppError("Invalid tag in records", 400));
         }
+        const externalIdExist = await inOutRecord_1.default.findOne({
+            externalId: record.externalId,
+            user: req.user._id,
+        });
+        if (!externalIdExist)
+            records.push(record);
     }
     const recordsWithUser = records.map((record) => ({
         ...record,

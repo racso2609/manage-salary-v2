@@ -31,11 +31,13 @@ export const createRecord = asyncHandler(
 
 export const createRecords = asyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const records = z
+    const rawRecords = z
       .array(InOutRecord.omit({ user: true }))
       .parse(req.body.records);
 
-    for (const record of records) {
+    const records: InOutRecord[] = [];
+
+    for (const record of rawRecords) {
       const amount = Number(record.amount);
       if (!amount) return next(new AppError("Invalid amount in records", 400));
 
@@ -46,6 +48,13 @@ export const createRecords = asyncHandler(
         });
         if (!tag) return next(new AppError("Invalid tag in records", 400));
       }
+
+      const externalIdExist = await InOutRecordHandler.findOne({
+        externalId: record.externalId,
+        user: req.user._id,
+      });
+
+      if (!externalIdExist) records.push(record);
     }
 
     const recordsWithUser = records.map((record) => ({

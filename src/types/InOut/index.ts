@@ -4,19 +4,20 @@ export const IN_OUT_RECORD_TYPES = ["in", "out"] as const;
 
 export const InOutRecord = z.object({
   // amount incoming if currency is usd 2 zeros for decimals
-  amount: z.preprocess((a) => BigInt(a?.toString() || 0), z.bigint()),
+  amount: z.preprocess(
+    (a) => BigInt(Number(a?.toString()).toFixed(0) || 0),
+    z.bigint(),
+  ),
   type: z.enum(IN_OUT_RECORD_TYPES),
   currency: z.preprocess((a) => a?.toString().toUpperCase(), z.string()),
   user: z.unknown(),
   description: z.string(),
   tag: z.unknown(),
-  date: z.preprocess(
-    (a) =>
-      ["string", "number"].includes(typeof a)
-        ? new Date(a as string | number)
-        : null,
-    z.date(),
-  ),
+  date: z.preprocess((a) => {
+    return ["string", "number", "Date"].includes(typeof a)
+      ? new Date(a as string | number)
+      : a;
+  }, z.date()),
   externalId: z.string().optional(),
   secondaryAmount: z
     .preprocess((a) => BigInt(a?.toString() || 0), z.bigint())
