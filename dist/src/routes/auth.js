@@ -8,4 +8,8 @@ authRouter.post("/login", auth_1.login);
 authRouter.post("/signup", auth_1.signup);
 authRouter.get("/refresh", authentication_1.protect, auth_1.refreshToken);
 authRouter.get("/status", authentication_1.protect, auth_1.tokenStatus);
+authRouter.post("/api-keys", authentication_1.protect, auth_1.generateApiKey);
+authRouter.get("/api-keys", authentication_1.protect, auth_1.listApiKeys);
+authRouter.delete("/api-keys/:keyId", authentication_1.protect, auth_1.deleteApiKey);
+authRouter.patch("/api-keys/:keyId", authentication_1.protect, auth_1.updateApiKey);
 exports.default = authRouter;

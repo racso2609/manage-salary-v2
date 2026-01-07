@@ -9,6 +9,7 @@ exports.ENV = zod_1.z.object({
     PORT: zod_1.z.preprocess((arg) => Number(arg), zod_1.z.number()).default(3001),
     REQUEST_PER_HOUR: zod_1.z.preprocess((arg) => Number(arg), zod_1.z.number()).default(150),
     JWT_SECRET: zod_1.z.string(),
+    API_KEY_SECRET: zod_1.z.string(),
     // DB
     MONGO_URI: zod_1.z.string(),
 });
