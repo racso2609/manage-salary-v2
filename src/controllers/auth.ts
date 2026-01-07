@@ -1,8 +1,10 @@
 import AuthHandler from "@/handlers/Auth";
 import { asyncHandler } from "@/handlers/callbacks";
 import { UsersHandler } from "@/handlers/Db/users";
+import { ApiKeyHandler } from "@/handlers/Db/apiKey";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest, User } from "@/types/Db/user";
+import { CreateApiKey } from "@/types/ApiKey";
 import { NextFunction, Request, Response } from "express";
 
 export const login = asyncHandler(
@@ -66,5 +68,74 @@ export const tokenStatus = asyncHandler(
     res.json({
       ...tokenStatus,
     });
+  },
+);
+
+export const generateApiKey = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { name, permissions, expiresAt } = CreateApiKey.parse(req.body);
+
+    const { plain, hash } = ApiKeyHandler.generateKey();
+
+    const expires = expiresAt ? new Date(expiresAt) : undefined;
+
+    const apiKeyDoc = await ApiKeyHandler.createApiKey({
+      user: (req.user._id as string).toString(),
+      name,
+      key: hash,
+      permissions,
+      expiresAt: expires,
+    });
+
+    res.json({
+      apiKey: plain,
+      name: apiKeyDoc.name,
+      permissions: apiKeyDoc.permissions,
+      expiresAt: apiKeyDoc.expiresAt,
+      createdAt: apiKeyDoc.createdAt,
+    });
+  },
+);
+
+export const listApiKeys = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const apiKeys = await ApiKeyHandler.findByUser((req.user._id as string).toString());
+
+    res.json({ apiKeys });
+  },
+);
+
+export const deleteApiKey = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const keyId = req.params.keyId;
+
+    const apiKey = await ApiKeyHandler.findOne({ _id: keyId });
+    if (!apiKey || apiKey.user.toString() !== (req.user._id as string).toString()) {
+      return next(new AppError("API Key not found", 404));
+    }
+
+    await ApiKeyHandler.updateOne({ _id: keyId }, { active: false });
+
+    res.json({ message: "API Key deactivated" });
+  },
+);
+
+export const updateApiKey = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const keyId = req.params.keyId;
+    const { permissions, expiresAt } = req.body;
+
+    const apiKey = await ApiKeyHandler.findOne({ _id: keyId });
+    if (!apiKey || apiKey.user.toString() !== (req.user._id as string).toString()) {
+      return next(new AppError("API Key not found", 404));
+    }
+
+    const updateData: any = {};
+    if (permissions) updateData.permissions = permissions;
+    if (expiresAt) updateData.expiresAt = new Date(expiresAt);
+
+    const updated = await ApiKeyHandler.updateOne({ _id: keyId }, updateData);
+
+    res.json({ updated });
   },
 );
