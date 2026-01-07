@@ -28,7 +28,9 @@ exports.createRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     res.json({ record: createdRecord });
 });
 exports.createRecords = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
-    const records = zod_1.z.array(InOut_1.InOutRecord.omit({ user: true })).parse(req.body);
+    const records = zod_1.z
+        .array(InOut_1.InOutRecord.omit({ user: true }))
+        .parse(req.body.records);
     for (const record of records) {
         const amount = Number(record.amount);
         if (!amount)
@@ -42,7 +44,7 @@ exports.createRecords = (0, callbacks_1.asyncHandler)(async (req, res, next) => 
                 return next(new AppError_1.AppError("Invalid tag in records", 400));
         }
     }
-    const recordsWithUser = records.map(record => ({
+    const recordsWithUser = records.map((record) => ({
         ...record,
         user: req.user._id,
     }));

@@ -31,7 +31,9 @@ export const createRecord = asyncHandler(
 
 export const createRecords = asyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const records = z.array(InOutRecord.omit({ user: true })).parse(req.body);
+    const records = z
+      .array(InOutRecord.omit({ user: true }))
+      .parse(req.body.records);
 
     for (const record of records) {
       const amount = Number(record.amount);
@@ -46,7 +48,7 @@ export const createRecords = asyncHandler(
       }
     }
 
-    const recordsWithUser = records.map(record => ({
+    const recordsWithUser = records.map((record) => ({
       ...record,
       user: req.user._id,
     }));
