@@ -13,6 +13,8 @@ exports.InOutRecord = zod_1.z.object({
     tag: zod_1.z.unknown(),
     date: zod_1.z.date(),
     externalId: zod_1.z.string().optional(),
+    secondaryAmount: zod_1.z.preprocess((a) => BigInt(a?.toString() || 0), zod_1.z.bigint()).optional(),
+    secondaryCurrency: zod_1.z.preprocess((a) => a?.toString().toUpperCase(), zod_1.z.string()).optional(),
     createdAt: zod_1.z.date().optional(),
     updatedAt: zod_1.z.date().optional(),
 });

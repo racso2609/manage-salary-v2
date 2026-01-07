@@ -15,6 +15,8 @@ const InOutRecordSchema = new Schema<InOutRecord>(
     tag: { type: Schema.Types.ObjectId, ref: "tag" },
     date: { type: Date, required: true },
     externalId: String,
+    secondaryAmount: BigInt,
+    secondaryCurrency: String,
   },
   { timestamps: true },
 );

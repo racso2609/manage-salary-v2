@@ -15,5 +15,7 @@ const InOutRecordSchema = new mongoose_1.Schema({
     tag: { type: mongoose_1.Schema.Types.ObjectId, ref: "tag" },
     date: { type: Date, required: true },
     externalId: String,
+    secondaryAmount: BigInt,
+    secondaryCurrency: String,
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("InOutRecord", InOutRecordSchema);
