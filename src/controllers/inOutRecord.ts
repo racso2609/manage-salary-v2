@@ -55,6 +55,11 @@ export const createRecords = asyncHandler(
       });
 
       if (!externalIdExist) records.push(record);
+      else {
+        console.log(
+          `Record with externalId ${record.externalId} already exists, skipping.`,
+        );
+      }
     }
 
     const recordsWithUser = records.map((record) => ({
@@ -148,6 +153,39 @@ export const getDashboardInfo = asyncHandler(
       totalIn,
       totalOut,
     });
+  },
+);
+
+export const updateRecord = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const recordId = z.string().parse(req.params.recordId);
+    const updateData = InOutRecord.omit({ user: true }).partial().parse(req.body);
+
+    const existingRecord = await InOutRecordHandler.findOne({ _id: recordId });
+    if (!existingRecord) return next(new AppError("Record doesnt exist", 404));
+
+    if (existingRecord?.user?.toString() !== req?.user?._id?.toString())
+      return next(new AppError("Record not owned", 401));
+
+    if (updateData.amount) {
+      const amount = Number(updateData.amount);
+      if (!amount) return next(new AppError("Invalid amount", 400));
+    }
+
+    if (updateData.tag) {
+      const tag = await TagHandler.findOne({
+        _id: updateData.tag,
+        user: req.user._id,
+      });
+      if (!tag) return next(new AppError("Invalid tag", 400));
+    }
+
+    const updatedRecord = await InOutRecordHandler.update(
+      { _id: recordId, user: req.user._id },
+      updateData
+    );
+
+    res.json({ record: updatedRecord });
   },
 );
 

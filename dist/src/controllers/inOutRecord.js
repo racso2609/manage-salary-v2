@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInOutRecords = exports.getDashboardInfo = exports.removeRecord = exports.createRecords = exports.createRecord = void 0;
+exports.getInOutRecords = exports.updateRecord = exports.getDashboardInfo = exports.removeRecord = exports.createRecords = exports.createRecord = void 0;
 const callbacks_1 = require("../handlers/callbacks");
 const inOutRecord_1 = __importDefault(require("../handlers/Db/inOutRecord"));
 const tag_1 = require("../handlers/Db/tag");
@@ -50,6 +50,9 @@ exports.createRecords = (0, callbacks_1.asyncHandler)(async (req, res, next) => 
         });
         if (!externalIdExist)
             records.push(record);
+        else {
+            console.log(`Record with externalId ${record.externalId} already exists, skipping.`);
+        }
     }
     const recordsWithUser = records.map((record) => ({
         ...record,
@@ -124,6 +127,30 @@ exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
         totalIn,
         totalOut,
     });
+});
+exports.updateRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
+    const recordId = zod_1.z.string().parse(req.params.recordId);
+    const updateData = InOut_1.InOutRecord.omit({ user: true }).partial().parse(req.body);
+    const existingRecord = await inOutRecord_1.default.findOne({ _id: recordId });
+    if (!existingRecord)
+        return next(new AppError_1.AppError("Record doesnt exist", 404));
+    if (existingRecord?.user?.toString() !== req?.user?._id?.toString())
+        return next(new AppError_1.AppError("Record not owned", 401));
+    if (updateData.amount) {
+        const amount = Number(updateData.amount);
+        if (!amount)
+            return next(new AppError_1.AppError("Invalid amount", 400));
+    }
+    if (updateData.tag) {
+        const tag = await tag_1.TagHandler.findOne({
+            _id: updateData.tag,
+            user: req.user._id,
+        });
+        if (!tag)
+            return next(new AppError_1.AppError("Invalid tag", 400));
+    }
+    const updatedRecord = await inOutRecord_1.default.update({ _id: recordId, user: req.user._id }, updateData);
+    res.json({ record: updatedRecord });
 });
 exports.getInOutRecords = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const userId = req?.user?._id?.toString();
