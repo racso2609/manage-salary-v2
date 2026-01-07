@@ -4,6 +4,7 @@ import {
   getDashboardInfo,
   getInOutRecords,
   removeRecord,
+  updateRecord,
 } from "@/controllers/inOutRecord";
 import { protect } from "@/middlewares/authentication";
 import { combinedAuth } from "@/middlewares/combinedAuth";
@@ -17,6 +18,9 @@ inOutRecordRouter
   .post(combinedAuth, createRecord);
 inOutRecordRouter.post("/bulk", combinedAuth, createRecords);
 inOutRecordRouter.get("/dashboard", protect, getDashboardInfo);
-inOutRecordRouter.delete("/:recordId", protect, removeRecord);
+inOutRecordRouter
+  .route("/:recordId")
+  .put(protect, updateRecord)
+  .delete(protect, removeRecord);
 
 export default inOutRecordRouter;
