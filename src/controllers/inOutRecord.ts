@@ -3,11 +3,7 @@ import InOutRecordHandler from "@/handlers/Db/inOutRecord";
 import { TagHandler } from "@/handlers/Db/tag";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
-import {
-  IN_OUT_RECORD_TYPES,
-  InOutRecord,
-  InOutRecordType,
-} from "@/types/InOut";
+import { InOutRecord, InOutRecordType } from "@/types/InOut";
 import { NextFunction, Response } from "express";
 import { FilterQuery } from "mongoose";
 import { z } from "zod";
