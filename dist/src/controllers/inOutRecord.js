@@ -51,14 +51,14 @@ exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
     if (tag)
         query["tag"] = tag;
     if (from && to) {
-        query["createdAt"] = {
+        query["date"] = {
             $gte: new Date(from),
             $lte: new Date(to),
         };
     }
     const recordsByDate = await inOutRecord_1.default.find(query, {
         group: {
-            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
             records: { $push: "$$ROOT" },
             counter: { $sum: 1 },
             // if record is type "in", sum amount, else sum negative amount
@@ -72,7 +72,7 @@ exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
                 },
             },
         },
-        sort: { createdAt: -1 },
+        sort: { date: -1 },
         populates: [{ path: "tag", unique: true }],
     });
     const total = recordsByDate.reduce((acc, record) => {
@@ -110,7 +110,7 @@ exports.getInOutRecords = (0, callbacks_1.asyncHandler)(async (req, res) => {
     if (from && to)
         query = {
             ...query,
-            createdAt: {
+            date: {
                 $gte: new Date(from),
                 $lte: new Date(to),
             },
@@ -118,7 +118,7 @@ exports.getInOutRecords = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const records = await inOutRecord_1.default.find(query, {
         limit,
         offset: page * limit,
-        sort: { createdAt: -1 },
+        sort: { date: -1 },
         populates: [
             {
                 path: "tag",

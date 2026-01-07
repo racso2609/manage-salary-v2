@@ -13,5 +13,6 @@ const InOutRecordSchema = new mongoose_1.Schema({
     },
     user: { type: mongoose_1.Schema.Types.ObjectId, ref: "user" },
     tag: { type: mongoose_1.Schema.Types.ObjectId, ref: "tag" },
+    date: { type: Date, required: true },
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("InOutRecord", InOutRecordSchema);

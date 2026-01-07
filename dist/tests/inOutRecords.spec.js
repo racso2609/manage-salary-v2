@@ -55,6 +55,7 @@ const getDashboardInfo = async (token) => {
             amount: 1n,
             type: "in",
             currency: "usd",
+            date: new Date(),
         };
     });
     (0, vitest_1.afterEach)(async () => {

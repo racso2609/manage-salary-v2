@@ -71,6 +71,7 @@ DbTestDescribe("inOutRecords", () => {
       amount: 1n,
       type: "in",
       currency: "usd",
+      date: new Date(),
     };
   });
 
