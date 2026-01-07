@@ -13,6 +13,7 @@ const InOutRecordSchema = new Schema<InOutRecord>(
     },
     user: { type: Schema.Types.ObjectId, ref: "user" },
     tag: { type: Schema.Types.ObjectId, ref: "tag" },
+    date: { type: Date, required: true },
   },
   { timestamps: true },
 );

@@ -65,7 +65,7 @@ export const getDashboardInfo = asyncHandler(
 
     if (tag) query["tag"] = tag;
     if (from && to) {
-      query["createdAt"] = {
+      query["date"] = {
         $gte: new Date(from),
         $lte: new Date(to),
       };
@@ -73,7 +73,7 @@ export const getDashboardInfo = asyncHandler(
 
     const recordsByDate = await InOutRecordHandler.find(query, {
       group: {
-        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+        _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
         records: { $push: "$$ROOT" },
         counter: { $sum: 1 },
         // if record is type "in", sum amount, else sum negative amount
@@ -87,7 +87,7 @@ export const getDashboardInfo = asyncHandler(
           },
         },
       },
-      sort: { createdAt: -1 },
+      sort: { date: -1 },
       populates: [{ path: "tag", unique: true }],
     });
 
@@ -134,7 +134,7 @@ export const getInOutRecords = asyncHandler(
     if (from && to)
       query = {
         ...query,
-        createdAt: {
+        date: {
           $gte: new Date(from),
           $lte: new Date(to),
         },
@@ -143,7 +143,7 @@ export const getInOutRecords = asyncHandler(
     const records = await InOutRecordHandler.find(query, {
       limit,
       offset: page * limit,
-      sort: { createdAt: -1 },
+      sort: { date: -1 },
       populates: [
         {
           path: "tag",

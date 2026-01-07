@@ -9,7 +9,8 @@
     "dev": "NODE_ENV=dev npx tsx src/index.ts",
     "build": "tsc",
     "postbuild": "tsc-alias -p ./tsconfig.json",
-    "test": "NODE_ENV=test vitest"
+    "test": "NODE_ENV=test vitest",
+    "migrate:date": "npx tsx scripts/migrate-inOutRecords-date.ts"
   },
   "keywords": [],
   "author": "",

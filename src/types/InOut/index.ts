@@ -10,6 +10,8 @@ export const InOutRecord = z.object({
   user: z.unknown(),
   description: z.string(),
   tag: z.unknown(),
+  date: z.date(),
+
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
