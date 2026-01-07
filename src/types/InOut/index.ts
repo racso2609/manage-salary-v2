@@ -10,10 +10,20 @@ export const InOutRecord = z.object({
   user: z.unknown(),
   description: z.string(),
   tag: z.unknown(),
-  date: z.date(),
+  date: z.preprocess(
+    (a) =>
+      ["string", "number"].includes(typeof a)
+        ? new Date(a as string | number)
+        : null,
+    z.date(),
+  ),
   externalId: z.string().optional(),
-  secondaryAmount: z.preprocess((a) => BigInt(a?.toString() || 0), z.bigint()).optional(),
-  secondaryCurrency: z.preprocess((a) => a?.toString().toUpperCase(), z.string()).optional(),
+  secondaryAmount: z
+    .preprocess((a) => BigInt(a?.toString() || 0), z.bigint())
+    .optional(),
+  secondaryCurrency: z
+    .preprocess((a) => a?.toString().toUpperCase(), z.string())
+    .optional(),
 
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
