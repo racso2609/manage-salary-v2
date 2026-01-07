@@ -29,6 +29,34 @@ export const createRecord = asyncHandler(
   },
 );
 
+export const createRecords = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const records = z.array(InOutRecord.omit({ user: true })).parse(req.body);
+
+    for (const record of records) {
+      const amount = Number(record.amount);
+      if (!amount) return next(new AppError("Invalid amount in records", 400));
+
+      if (record.tag) {
+        const tag = await TagHandler.findOne({
+          _id: record.tag,
+          user: req.user._id,
+        });
+        if (!tag) return next(new AppError("Invalid tag in records", 400));
+      }
+    }
+
+    const recordsWithUser = records.map(record => ({
+      ...record,
+      user: req.user._id,
+    }));
+
+    const createdRecords = await InOutRecordHandler.createMany(recordsWithUser);
+
+    res.json({ records: createdRecords });
+  },
+);
+
 export const removeRecord = asyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const recordId = z.string().parse(req.params.recordId);

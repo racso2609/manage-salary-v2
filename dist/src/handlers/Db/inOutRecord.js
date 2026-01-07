@@ -13,6 +13,10 @@ class InOutRecordHandlerRepository extends _1.DbRepository {
     create(data) {
         return this.model.create(InOut_1.InOutRecord.parse(data));
     }
+    createMany(data) {
+        const parsedData = data.map(d => InOut_1.InOutRecord.parse(d));
+        return this.model.insertMany(parsedData);
+    }
 }
 const InOutRecordHandler = new InOutRecordHandlerRepository();
 exports.default = InOutRecordHandler;

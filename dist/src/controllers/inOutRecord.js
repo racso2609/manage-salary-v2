@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInOutRecords = exports.getDashboardInfo = exports.removeRecord = exports.createRecord = void 0;
+exports.getInOutRecords = exports.getDashboardInfo = exports.removeRecord = exports.createRecords = exports.createRecord = void 0;
 const callbacks_1 = require("../handlers/callbacks");
 const inOutRecord_1 = __importDefault(require("../handlers/Db/inOutRecord"));
 const tag_1 = require("../handlers/Db/tag");
@@ -26,6 +26,28 @@ exports.createRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
         user: req.user._id,
     });
     res.json({ record: createdRecord });
+});
+exports.createRecords = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
+    const records = zod_1.z.array(InOut_1.InOutRecord.omit({ user: true })).parse(req.body);
+    for (const record of records) {
+        const amount = Number(record.amount);
+        if (!amount)
+            return next(new AppError_1.AppError("Invalid amount in records", 400));
+        if (record.tag) {
+            const tag = await tag_1.TagHandler.findOne({
+                _id: record.tag,
+                user: req.user._id,
+            });
+            if (!tag)
+                return next(new AppError_1.AppError("Invalid tag in records", 400));
+        }
+    }
+    const recordsWithUser = records.map(record => ({
+        ...record,
+        user: req.user._id,
+    }));
+    const createdRecords = await inOutRecord_1.default.createMany(recordsWithUser);
+    res.json({ records: createdRecords });
 });
 exports.removeRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     const recordId = zod_1.z.string().parse(req.params.recordId);

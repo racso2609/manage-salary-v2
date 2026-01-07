@@ -1,5 +1,6 @@
 import {
   createRecord,
+  createRecords,
   getDashboardInfo,
   getInOutRecords,
   removeRecord,
@@ -14,6 +15,7 @@ inOutRecordRouter
   .route("/")
   .get(protect, getInOutRecords)
   .post(combinedAuth, createRecord);
+inOutRecordRouter.post("/bulk", combinedAuth, createRecords);
 inOutRecordRouter.get("/dashboard", protect, getDashboardInfo);
 inOutRecordRouter.delete("/:recordId", protect, removeRecord);
 
