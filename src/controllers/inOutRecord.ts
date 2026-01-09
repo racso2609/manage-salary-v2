@@ -5,7 +5,7 @@ import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
 import { InOutRecord, InOutRecordType, AnalyticsQuery } from "@/types/InOut";
 import { NextFunction, Response } from "express";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, PipelineStage, Types } from "mongoose";
 import { z } from "zod";
 
 export const createRecord = asyncHandler(
@@ -159,7 +159,9 @@ export const getDashboardInfo = asyncHandler(
 export const updateRecord = asyncHandler(
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const recordId = z.string().parse(req.params.recordId);
-    const updateData = InOutRecord.omit({ user: true }).partial().parse(req.body);
+    const updateData = InOutRecord.omit({ user: true })
+      .partial()
+      .parse(req.body);
 
     const existingRecord = await InOutRecordHandler.findOne({ _id: recordId });
     if (!existingRecord) return next(new AppError("Record doesnt exist", 404));
@@ -182,7 +184,7 @@ export const updateRecord = asyncHandler(
 
     const updatedRecord = await InOutRecordHandler.update(
       { _id: recordId, user: req.user._id },
-      updateData
+      updateData,
     );
 
     res.json({ record: updatedRecord });
@@ -236,18 +238,23 @@ export const getAnalytics = asyncHandler(
 
     const { tag, from, to } = queryParams;
 
-    // Default to last 12 months if no dates
+    // Default to all time if no dates
     const now = new Date();
-    const defaultFrom = new Date(now.getFullYear(), now.getMonth() - 12, 1);
+    const defaultFrom = new Date(0);
     const defaultTo = now;
 
     const startDate = from ? new Date(from) : defaultFrom;
     const endDate = to ? new Date(to) : defaultTo;
 
-    const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysDiff = Math.max(
+      1,
+      Math.ceil(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+      ),
+    );
 
     const baseQuery = {
-      user: userId,
+      user: new Types.ObjectId(userId),
       type: "out",
       date: {
         $gte: startDate,
@@ -258,7 +265,7 @@ export const getAnalytics = asyncHandler(
     if (tag) baseQuery["tag"] = tag;
 
     // Aggregation pipeline
-    const pipeline: any[] = [
+    const pipeline: PipelineStage[] = [
       { $match: baseQuery },
       {
         $facet: {
@@ -267,7 +274,7 @@ export const getAnalytics = asyncHandler(
             {
               $group: {
                 _id: null,
-                total: { $sum: "$amount" },
+                total: { $sum: { $toDouble: "$amount" } },
               },
             },
           ],
@@ -276,7 +283,7 @@ export const getAnalytics = asyncHandler(
             {
               $group: {
                 _id: null,
-                total: { $sum: "$amount" },
+                total: { $sum: { $toDouble: "$amount" } },
               },
             },
           ],
@@ -287,7 +294,7 @@ export const getAnalytics = asyncHandler(
                 _id: {
                   month: { $dateToString: { format: "%Y-%m", date: "$date" } },
                 },
-                total: { $sum: "$amount" },
+                total: { $sum: { $toDouble: "$amount" } },
                 count: { $sum: 1 },
               },
             },
@@ -298,9 +305,11 @@ export const getAnalytics = asyncHandler(
             {
               $group: {
                 _id: {
-                  date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                  date: {
+                    $dateToString: { format: "%Y-%m-%d", date: "$date" },
+                  },
                 },
-                total: { $sum: "$amount" },
+                total: { $sum: { $toDouble: "$amount" } },
               },
             },
             { $sort: { total: -1 } },
@@ -320,7 +329,7 @@ export const getAnalytics = asyncHandler(
             {
               $group: {
                 _id: { name: "$tagInfo.name" },
-                total: { $sum: "$amount" },
+                total: { $sum: { $toDouble: "$amount" } },
               },
             },
             { $sort: { total: -1 } },
@@ -333,7 +342,7 @@ export const getAnalytics = asyncHandler(
                 _id: {
                   dayOfWeek: { $dayOfWeek: "$date" }, // 1=Sunday, 7=Saturday
                 },
-                total: { $sum: "$amount" },
+                total: { $sum: { $toDouble: "$amount" } },
                 count: { $sum: 1 },
               },
             },
@@ -351,12 +360,18 @@ export const getAnalytics = asyncHandler(
     ];
 
     const result = await InOutRecordHandler.aggregate(pipeline);
+    console.log("=== analytics result", JSON.stringify(result, null, 2));
 
     if (!result || result.length === 0) {
       return res.json({
         totalSpending: 0,
         dailyAverage: 0,
-        spendingTrend: { recentAvg: 0, olderAvg: 0, changePercent: 0, trendDirection: "neutral" },
+        spendingTrend: {
+          recentAvg: 0,
+          olderAvg: 0,
+          changePercent: 0,
+          trendDirection: "neutral",
+        },
         peakSpendingDay: null,
         topCategory: null,
         busiestDay: null,
@@ -379,24 +394,47 @@ export const getAnalytics = asyncHandler(
     const recentMonths = months.slice(midIndex);
 
     const olderTotal = olderMonths.reduce((sum, m) => sum + Number(m.total), 0);
-    const recentTotal = recentMonths.reduce((sum, m) => sum + Number(m.total), 0);
+    const recentTotal = recentMonths.reduce(
+      (sum, m) => sum + Number(m.total),
+      0,
+    );
     const olderCount = olderMonths.reduce((sum, m) => sum + m.count, 0);
     const recentCount = recentMonths.reduce((sum, m) => sum + m.count, 0);
 
     const olderAvg = olderCount > 0 ? olderTotal / olderCount : 0;
     const recentAvg = recentCount > 0 ? recentTotal / recentCount : 0;
-    const changePercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
-    const trendDirection = changePercent > 5 ? "up" : changePercent < -5 ? "down" : "neutral";
+    const changePercent =
+      olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
+    const trendDirection =
+      changePercent > 5 ? "up" : changePercent < -5 ? "down" : "neutral";
 
     // Peak day
-    const peakSpendingDay = data.peakDay.length > 0 ? { date: data.peakDay[0]._id.date, amount: Number(data.peakDay[0].total) } : null;
+    const peakSpendingDay =
+      data.peakDay.length > 0
+        ? {
+            date: data.peakDay[0]._id.date,
+            amount: Number(data.peakDay[0].total),
+          }
+        : null;
 
     // Top category
-    const topCategory = data.topCategory.length > 0 ? { name: data.topCategory[0]._id.name, amount: Number(data.topCategory[0].total) } : null;
+    const topCategory =
+      data.topCategory.length > 0
+        ? {
+            name: data.topCategory[0]._id.name,
+            amount: Number(data.topCategory[0].total),
+          }
+        : null;
 
     // Busiest day (adjust dayOfWeek: 1=Sun to 0=Sun, 7=Sat to 6=Sat)
-    const busiestDayRaw = data.busiestDay.length > 0 ? data.busiestDay[0] : null;
-    const busiestDay = busiestDayRaw ? { dayOfWeek: (busiestDayRaw._id.dayOfWeek - 1) % 7, avg: Number(busiestDayRaw.avg) } : null;
+    const busiestDayRaw =
+      data.busiestDay.length > 0 ? data.busiestDay[0] : null;
+    const busiestDay = busiestDayRaw
+      ? {
+          dayOfWeek: (busiestDayRaw._id.dayOfWeek - 1) % 7,
+          avg: Number(busiestDayRaw.avg),
+        }
+      : null;
 
     res.json({
       totalSpending,

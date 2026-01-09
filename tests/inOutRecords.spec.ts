@@ -37,6 +37,18 @@ const getDashboardInfo = async (token: string) => {
   return fetcher.get(`/api/records/dashboard`).set("Authorization", token);
 };
 
+const getAnalytics = async (
+  token: string,
+  queryParams: Record<string, string | number> = {},
+) => {
+  const query = Object.keys(queryParams)
+    .map((param) => `${param}=${queryParams[param] ?? "a"}`)
+    .join("&");
+  return fetcher
+    .get(`/api/records/analytics?${query}`)
+    .set("Authorization", token);
+};
+
 DbTestDescribe("inOutRecords", () => {
   let user: User & { _id: unknown };
   let token: string;
@@ -191,5 +203,43 @@ DbTestDescribe("inOutRecords", () => {
     expect(response.body.records.length).toBe(2);
     expect(response.body.records.map((a) => a._id).join("/")).toBe("out/in");
     expect(response.body.total).toBe(9);
+  });
+
+  test.only("get analytics", async () => {
+    const now = new Date();
+    // Create multiple outflow records for testing with recent dates
+    await createRecord(
+      { ...record, type: "out", amount: 100n, date: now },
+      token,
+    );
+    await createRecord(
+      { ...record, type: "out", amount: 200n, date: now },
+      token,
+    );
+    await createRecord(
+      { ...record, type: "out", amount: 150n, date: now },
+      token,
+    );
+    await createRecord(
+      { ...record, type: "out", amount: 50n, date: now },
+      token,
+    );
+
+    const response = await getAnalytics(token); // No from/to, uses default last 12 months
+    expect(response.statusCode).toBe(200);
+
+    expect(response.body).toHaveProperty("totalSpending");
+    expect(response.body).toHaveProperty("dailyAverage");
+    expect(response.body).toHaveProperty("spendingTrend");
+    expect(response.body).toHaveProperty("peakSpendingDay");
+    expect(response.body).toHaveProperty("topCategory");
+    expect(response.body).toHaveProperty("busiestDay");
+
+    expect(response.body.totalSpending).toBe(500);
+    expect(response.body.dailyAverage).toBeGreaterThan(0);
+    expect(response.body.spendingTrend.trendDirection).toBeDefined();
+    expect(response.body.peakSpendingDay).toBeDefined();
+    expect(response.body.topCategory.name).toBe("hola");
+    expect(response.body.busiestDay).toBeDefined();
   });
 });

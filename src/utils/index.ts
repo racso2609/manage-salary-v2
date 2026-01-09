@@ -2,6 +2,8 @@ export const cleanData = (messages: unknown): any => {
   const isArray = Array.isArray(messages);
   if (isArray) return messages.map((message) => cleanData(message));
 
+  if (messages instanceof Date) return messages;
+
   const isObject = typeof messages === "object";
 
   if (isObject)
