@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InOutRecordType = exports.InOutRecord = exports.IN_OUT_RECORD_TYPES = void 0;
+exports.AnalyticsQuery = exports.InOutRecordType = exports.InOutRecord = exports.IN_OUT_RECORD_TYPES = void 0;
 const zod_1 = require("zod");
 exports.IN_OUT_RECORD_TYPES = ["in", "out"];
 exports.InOutRecord = zod_1.z.object({
@@ -27,3 +27,8 @@ exports.InOutRecord = zod_1.z.object({
     updatedAt: zod_1.z.date().optional(),
 });
 exports.InOutRecordType = zod_1.z.enum(exports.IN_OUT_RECORD_TYPES);
+exports.AnalyticsQuery = zod_1.z.object({
+    tag: zod_1.z.string().optional(),
+    from: zod_1.z.string().optional(),
+    to: zod_1.z.string().optional(),
+});

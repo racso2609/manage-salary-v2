@@ -11,6 +11,7 @@ inOutRecordRouter
     .post(combinedAuth_1.combinedAuth, inOutRecord_1.createRecord);
 inOutRecordRouter.post("/bulk", combinedAuth_1.combinedAuth, inOutRecord_1.createRecords);
 inOutRecordRouter.get("/dashboard", authentication_1.protect, inOutRecord_1.getDashboardInfo);
+inOutRecordRouter.get("/analytics", authentication_1.protect, inOutRecord_1.getAnalytics);
 inOutRecordRouter
     .route("/:recordId")
     .put(authentication_1.protect, inOutRecord_1.updateRecord)
