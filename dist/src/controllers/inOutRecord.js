@@ -9,6 +9,7 @@ const inOutRecord_1 = __importDefault(require("../handlers/Db/inOutRecord"));
 const tag_1 = require("../handlers/Db/tag");
 const AppError_1 = require("../handlers/Errors/AppError");
 const InOut_1 = require("../types/InOut");
+const mongoose_1 = require("mongoose");
 const zod_1 = require("zod");
 exports.createRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     const record = InOut_1.InOutRecord.omit({ user: true }).parse(req.body);
@@ -130,7 +131,9 @@ exports.getDashboardInfo = (0, callbacks_1.asyncHandler)(async (req, res) => {
 });
 exports.updateRecord = (0, callbacks_1.asyncHandler)(async (req, res, next) => {
     const recordId = zod_1.z.string().parse(req.params.recordId);
-    const updateData = InOut_1.InOutRecord.omit({ user: true }).partial().parse(req.body);
+    const updateData = InOut_1.InOutRecord.omit({ user: true })
+        .partial()
+        .parse(req.body);
     const existingRecord = await inOutRecord_1.default.findOne({ _id: recordId });
     if (!existingRecord)
         return next(new AppError_1.AppError("Record doesnt exist", 404));
@@ -190,15 +193,15 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const userId = req?.user?._id?.toString();
     const queryParams = InOut_1.AnalyticsQuery.parse(req.query);
     const { tag, from, to } = queryParams;
-    // Default to last 12 months if no dates
+    // Default to all time if no dates
     const now = new Date();
-    const defaultFrom = new Date(now.getFullYear(), now.getMonth() - 12, 1);
+    const defaultFrom = new Date(0);
     const defaultTo = now;
     const startDate = from ? new Date(from) : defaultFrom;
     const endDate = to ? new Date(to) : defaultTo;
     const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     const baseQuery = {
-        user: userId,
+        user: new mongoose_1.Types.ObjectId(userId),
         type: "out",
         date: {
             $gte: startDate,
@@ -217,7 +220,7 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
                     {
                         $group: {
                             _id: null,
-                            total: { $sum: "$amount" },
+                            total: { $sum: { $toDouble: "$amount" } },
                         },
                     },
                 ],
@@ -226,7 +229,7 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
                     {
                         $group: {
                             _id: null,
-                            total: { $sum: "$amount" },
+                            total: { $sum: { $toDouble: "$amount" } },
                         },
                     },
                 ],
@@ -237,7 +240,7 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
                             _id: {
                                 month: { $dateToString: { format: "%Y-%m", date: "$date" } },
                             },
-                            total: { $sum: "$amount" },
+                            total: { $sum: { $toDouble: "$amount" } },
                             count: { $sum: 1 },
                         },
                     },
@@ -248,9 +251,11 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
                     {
                         $group: {
                             _id: {
-                                date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                                date: {
+                                    $dateToString: { format: "%Y-%m-%d", date: "$date" },
+                                },
                             },
-                            total: { $sum: "$amount" },
+                            total: { $sum: { $toDouble: "$amount" } },
                         },
                     },
                     { $sort: { total: -1 } },
@@ -270,7 +275,7 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
                     {
                         $group: {
                             _id: { name: "$tagInfo.name" },
-                            total: { $sum: "$amount" },
+                            total: { $sum: { $toDouble: "$amount" } },
                         },
                     },
                     { $sort: { total: -1 } },
@@ -283,7 +288,7 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
                             _id: {
                                 dayOfWeek: { $dayOfWeek: "$date" }, // 1=Sunday, 7=Saturday
                             },
-                            total: { $sum: "$amount" },
+                            total: { $sum: { $toDouble: "$amount" } },
                             count: { $sum: 1 },
                         },
                     },
@@ -300,11 +305,17 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
         },
     ];
     const result = await inOutRecord_1.default.aggregate(pipeline);
+    console.log("=== analytics result", JSON.stringify(result, null, 2));
     if (!result || result.length === 0) {
         return res.json({
             totalSpending: 0,
             dailyAverage: 0,
-            spendingTrend: { recentAvg: 0, olderAvg: 0, changePercent: 0, trendDirection: "neutral" },
+            spendingTrend: {
+                recentAvg: 0,
+                olderAvg: 0,
+                changePercent: 0,
+                trendDirection: "neutral",
+            },
             peakSpendingDay: null,
             topCategory: null,
             busiestDay: null,
@@ -330,12 +341,27 @@ exports.getAnalytics = (0, callbacks_1.asyncHandler)(async (req, res) => {
     const changePercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
     const trendDirection = changePercent > 5 ? "up" : changePercent < -5 ? "down" : "neutral";
     // Peak day
-    const peakSpendingDay = data.peakDay.length > 0 ? { date: data.peakDay[0]._id.date, amount: Number(data.peakDay[0].total) } : null;
+    const peakSpendingDay = data.peakDay.length > 0
+        ? {
+            date: data.peakDay[0]._id.date,
+            amount: Number(data.peakDay[0].total),
+        }
+        : null;
     // Top category
-    const topCategory = data.topCategory.length > 0 ? { name: data.topCategory[0]._id.name, amount: Number(data.topCategory[0].total) } : null;
+    const topCategory = data.topCategory.length > 0
+        ? {
+            name: data.topCategory[0]._id.name,
+            amount: Number(data.topCategory[0].total),
+        }
+        : null;
     // Busiest day (adjust dayOfWeek: 1=Sun to 0=Sun, 7=Sat to 6=Sat)
     const busiestDayRaw = data.busiestDay.length > 0 ? data.busiestDay[0] : null;
-    const busiestDay = busiestDayRaw ? { dayOfWeek: (busiestDayRaw._id.dayOfWeek - 1) % 7, avg: Number(busiestDayRaw.avg) } : null;
+    const busiestDay = busiestDayRaw
+        ? {
+            dayOfWeek: (busiestDayRaw._id.dayOfWeek - 1) % 7,
+            avg: Number(busiestDayRaw.avg),
+        }
+        : null;
     res.json({
         totalSpending,
         dailyAverage,

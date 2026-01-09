@@ -29,6 +29,14 @@ const getRecords = async (token, queryParams = {}) => {
 const getDashboardInfo = async (token) => {
     return fetchers_1.fetcher.get(`/api/records/dashboard`).set("Authorization", token);
 };
+const getAnalytics = async (token, queryParams = {}) => {
+    const query = Object.keys(queryParams)
+        .map((param) => `${param}=${queryParams[param] ?? "a"}`)
+        .join("&");
+    return fetchers_1.fetcher
+        .get(`/api/records/analytics?${query}`)
+        .set("Authorization", token);
+};
 (0, describes_1.DbTestDescribe)("inOutRecords", () => {
     let user;
     let token;
@@ -151,5 +159,27 @@ const getDashboardInfo = async (token) => {
         (0, vitest_1.expect)(response.body.records.length).toBe(2);
         (0, vitest_1.expect)(response.body.records.map((a) => a._id).join("/")).toBe("out/in");
         (0, vitest_1.expect)(response.body.total).toBe(9);
+    });
+    vitest_1.test.only("get analytics", async () => {
+        const now = new Date();
+        // Create multiple outflow records for testing with recent dates
+        await createRecord({ ...record, type: "out", amount: 100n, date: now }, token);
+        await createRecord({ ...record, type: "out", amount: 200n, date: now }, token);
+        await createRecord({ ...record, type: "out", amount: 150n, date: now }, token);
+        await createRecord({ ...record, type: "out", amount: 50n, date: now }, token);
+        const response = await getAnalytics(token); // No from/to, uses default last 12 months
+        (0, vitest_1.expect)(response.statusCode).toBe(200);
+        (0, vitest_1.expect)(response.body).toHaveProperty("totalSpending");
+        (0, vitest_1.expect)(response.body).toHaveProperty("dailyAverage");
+        (0, vitest_1.expect)(response.body).toHaveProperty("spendingTrend");
+        (0, vitest_1.expect)(response.body).toHaveProperty("peakSpendingDay");
+        (0, vitest_1.expect)(response.body).toHaveProperty("topCategory");
+        (0, vitest_1.expect)(response.body).toHaveProperty("busiestDay");
+        (0, vitest_1.expect)(response.body.totalSpending).toBe(500);
+        (0, vitest_1.expect)(response.body.dailyAverage).toBeGreaterThan(0);
+        (0, vitest_1.expect)(response.body.spendingTrend.trendDirection).toBeDefined();
+        (0, vitest_1.expect)(response.body.peakSpendingDay).toBeDefined();
+        (0, vitest_1.expect)(response.body.topCategory.name).toBe("hola");
+        (0, vitest_1.expect)(response.body.busiestDay).toBeDefined();
     });
 });

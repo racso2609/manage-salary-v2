@@ -5,6 +5,8 @@ const cleanData = (messages) => {
     const isArray = Array.isArray(messages);
     if (isArray)
         return messages.map((message) => (0, exports.cleanData)(message));
+    if (messages instanceof Date)
+        return messages;
     const isObject = typeof messages === "object";
     if (isObject)
         // @ts-expect-error this type of data should have keys
