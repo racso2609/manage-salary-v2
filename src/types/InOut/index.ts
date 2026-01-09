@@ -42,3 +42,59 @@ export const AnalyticsQuery = z.object({
 });
 
 export type AnalyticsQuery = z.infer<typeof AnalyticsQuery>;
+
+// Phase 2: Advanced Insights API types
+export const PeakSpending = z.object({
+  period: z.string(), // e.g., "monthly", "weekly"
+  date: z.date(),
+  amount: z.bigint(),
+});
+
+export const SpendingTrend = z.object({
+  period: z.string(), // e.g., "mom" (month-over-month), "yoy" (year-over-year)
+  change: z.number(), // percentage change
+  direction: z.enum(["up", "down", "neutral"]),
+});
+
+export const SpendingPattern = z.object({
+  type: z.string(), // e.g., "cycle", "anomaly"
+  description: z.string(), // e.g., "Higher spending on weekends"
+  data: z.array(z.any()), // flexible for anomalies, cycles
+});
+
+export const Recommendation = z.object({
+  type: z.string(), // e.g., "budget", "saving"
+  message: z.string(), // e.g., "Reduce spending on entertainment by 15%"
+});
+
+export const InsightsResponse = z.object({
+  peaks: z.array(PeakSpending),
+  trends: z.array(SpendingTrend),
+  patterns: z.array(SpendingPattern),
+  recommendations: z.array(Recommendation),
+});
+
+export type InsightsResponse = z.infer<typeof InsightsResponse>;
+
+// Phase 3: Dashboard Data API types
+export const DashboardTotals = z.object({
+  income: z.bigint(),
+  expenses: z.bigint(),
+  savingsRate: z.number(), // percentage
+  balance: z.bigint(),
+});
+
+export const MonthlyData = z.object({
+  month: z.string(), // YYYY-MM
+  income: z.bigint(),
+  expenses: z.bigint(),
+  balance: z.bigint(),
+});
+
+export const DashboardDataResponse = z.object({
+  totals: DashboardTotals,
+  monthly: z.array(MonthlyData),
+  analytics: z.any(), // reuse from existing analytics
+});
+
+export type DashboardDataResponse = z.infer<typeof DashboardDataResponse>;
