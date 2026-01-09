@@ -3,7 +3,7 @@ import InOutRecordHandler from "@/handlers/Db/inOutRecord";
 import { TagHandler } from "@/handlers/Db/tag";
 import { AppError } from "@/handlers/Errors/AppError";
 import { AuthenticatedRequest } from "@/types/Db/user";
-import { InOutRecord, InOutRecordType } from "@/types/InOut";
+import { InOutRecord, InOutRecordType, AnalyticsQuery } from "@/types/InOut";
 import { NextFunction, Response } from "express";
 import { FilterQuery } from "mongoose";
 import { z } from "zod";
@@ -226,5 +226,190 @@ export const getInOutRecords = asyncHandler(
     });
 
     res.json({ records });
+  },
+);
+
+export const getAnalytics = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req?.user?._id?.toString();
+    const queryParams = AnalyticsQuery.parse(req.query);
+
+    const { tag, from, to } = queryParams;
+
+    // Default to last 12 months if no dates
+    const now = new Date();
+    const defaultFrom = new Date(now.getFullYear(), now.getMonth() - 12, 1);
+    const defaultTo = now;
+
+    const startDate = from ? new Date(from) : defaultFrom;
+    const endDate = to ? new Date(to) : defaultTo;
+
+    const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+    const baseQuery = {
+      user: userId,
+      type: "out",
+      date: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    };
+
+    if (tag) baseQuery["tag"] = tag;
+
+    // Aggregation pipeline
+    const pipeline: any[] = [
+      { $match: baseQuery },
+      {
+        $facet: {
+          // Total spending
+          totalSpending: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: "$amount" },
+              },
+            },
+          ],
+          // Daily average (overall)
+          dailyAvg: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: "$amount" },
+              },
+            },
+          ],
+          // Spending trend: split into older/recent
+          spendingTrend: [
+            {
+              $group: {
+                _id: {
+                  month: { $dateToString: { format: "%Y-%m", date: "$date" } },
+                },
+                total: { $sum: "$amount" },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { "_id.month": 1 } },
+          ],
+          // Peak spending day
+          peakDay: [
+            {
+              $group: {
+                _id: {
+                  date: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                },
+                total: { $sum: "$amount" },
+              },
+            },
+            { $sort: { total: -1 } },
+            { $limit: 1 },
+          ],
+          // Top category
+          topCategory: [
+            {
+              $lookup: {
+                from: "tags",
+                localField: "tag",
+                foreignField: "_id",
+                as: "tagInfo",
+              },
+            },
+            { $unwind: "$tagInfo" },
+            {
+              $group: {
+                _id: { name: "$tagInfo.name" },
+                total: { $sum: "$amount" },
+              },
+            },
+            { $sort: { total: -1 } },
+            { $limit: 1 },
+          ],
+          // Busiest day of week
+          busiestDay: [
+            {
+              $group: {
+                _id: {
+                  dayOfWeek: { $dayOfWeek: "$date" }, // 1=Sunday, 7=Saturday
+                },
+                total: { $sum: "$amount" },
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                avg: { $divide: ["$total", "$count"] },
+              },
+            },
+            { $sort: { avg: -1 } },
+            { $limit: 1 },
+          ],
+        },
+      },
+    ];
+
+    const result = await InOutRecordHandler.aggregate(pipeline);
+
+    if (!result || result.length === 0) {
+      return res.json({
+        totalSpending: 0,
+        dailyAverage: 0,
+        spendingTrend: { recentAvg: 0, olderAvg: 0, changePercent: 0, trendDirection: "neutral" },
+        peakSpendingDay: null,
+        topCategory: null,
+        busiestDay: null,
+      });
+    }
+
+    const data = result[0];
+
+    // Process total spending
+    const totalSpendingRaw = data.totalSpending[0]?.total || 0n;
+    const totalSpending = Number(totalSpendingRaw);
+
+    // Daily average
+    const dailyAverage = totalSpending / daysDiff;
+
+    // Spending trend
+    const months = data.spendingTrend;
+    const midIndex = Math.floor(months.length / 2);
+    const olderMonths = months.slice(0, midIndex);
+    const recentMonths = months.slice(midIndex);
+
+    const olderTotal = olderMonths.reduce((sum, m) => sum + Number(m.total), 0);
+    const recentTotal = recentMonths.reduce((sum, m) => sum + Number(m.total), 0);
+    const olderCount = olderMonths.reduce((sum, m) => sum + m.count, 0);
+    const recentCount = recentMonths.reduce((sum, m) => sum + m.count, 0);
+
+    const olderAvg = olderCount > 0 ? olderTotal / olderCount : 0;
+    const recentAvg = recentCount > 0 ? recentTotal / recentCount : 0;
+    const changePercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
+    const trendDirection = changePercent > 5 ? "up" : changePercent < -5 ? "down" : "neutral";
+
+    // Peak day
+    const peakSpendingDay = data.peakDay.length > 0 ? { date: data.peakDay[0]._id.date, amount: Number(data.peakDay[0].total) } : null;
+
+    // Top category
+    const topCategory = data.topCategory.length > 0 ? { name: data.topCategory[0]._id.name, amount: Number(data.topCategory[0].total) } : null;
+
+    // Busiest day (adjust dayOfWeek: 1=Sun to 0=Sun, 7=Sat to 6=Sat)
+    const busiestDayRaw = data.busiestDay.length > 0 ? data.busiestDay[0] : null;
+    const busiestDay = busiestDayRaw ? { dayOfWeek: (busiestDayRaw._id.dayOfWeek - 1) % 7, avg: Number(busiestDayRaw.avg) } : null;
+
+    res.json({
+      totalSpending,
+      dailyAverage,
+      spendingTrend: {
+        recentAvg,
+        olderAvg,
+        changePercent,
+        trendDirection,
+      },
+      peakSpendingDay,
+      topCategory,
+      busiestDay,
+    });
   },
 );

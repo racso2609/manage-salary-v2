@@ -1,6 +1,7 @@
 import {
   createRecord,
   createRecords,
+  getAnalytics,
   getDashboardInfo,
   getInOutRecords,
   removeRecord,
@@ -18,6 +19,7 @@ inOutRecordRouter
   .post(combinedAuth, createRecord);
 inOutRecordRouter.post("/bulk", combinedAuth, createRecords);
 inOutRecordRouter.get("/dashboard", protect, getDashboardInfo);
+inOutRecordRouter.get("/analytics", protect, getAnalytics);
 inOutRecordRouter
   .route("/:recordId")
   .put(protect, updateRecord)

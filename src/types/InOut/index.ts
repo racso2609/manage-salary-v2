@@ -34,3 +34,11 @@ export type InOutRecord = z.infer<typeof InOutRecord>;
 
 export const InOutRecordType = z.enum(IN_OUT_RECORD_TYPES);
 export type InOutRecordType = z.infer<typeof InOutRecordType>;
+
+export const AnalyticsQuery = z.object({
+  tag: z.string().optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+});
+
+export type AnalyticsQuery = z.infer<typeof AnalyticsQuery>;
